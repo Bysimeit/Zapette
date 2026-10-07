@@ -70,5 +70,6 @@
     <string name="error_invalid_url">Ungültige Serveradresse.</string>
     <string name="error_http_denied">Zugriff vom Server verweigert (HTTP %1$d).</string>
     <string name="error_http_404">API nicht gefunden (HTTP 404). Prüfe Adresse und Port.</string>
+    <string name="error_http_too_many">Der Server erhält zu viele Anfragen (HTTP 429). Versuche es in ein paar Sekunden erneut.</string>
     <string name="error_http_other">Serverfehler (HTTP %1$d).</string>
 </resources>

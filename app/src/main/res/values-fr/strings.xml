@@ -70,5 +70,6 @@
     <string name="error_invalid_url">Adresse du serveur invalide.</string>
     <string name="error_http_denied">Accès refusé par le serveur (HTTP %1$d).</string>
     <string name="error_http_404">API introuvable (HTTP 404). Vérifie l\'adresse et le port.</string>
+    <string name="error_http_too_many">Le serveur reçoit trop de requêtes (HTTP 429). Réessaie dans quelques secondes.</string>
     <string name="error_http_other">Erreur du serveur (HTTP %1$d).</string>
 </resources>

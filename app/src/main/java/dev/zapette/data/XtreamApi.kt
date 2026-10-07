@@ -2,6 +2,7 @@ package dev.zapette.data
 
 import android.util.Base64
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrl
@@ -155,13 +156,24 @@ class XtreamApi(val account: Account, private val cache: CatalogCache? = null) {
         store?.read(key)?.let { body ->
             runCatching { parse(body) }.onSuccess { return@withContext it }
         }
-        val body = Http.client.newCall(Request.Builder().url(url).build()).execute().use { response ->
-            if (!response.isSuccessful) {
-                throw XtreamException(XtreamException.Reason.HTTP, response.code)
-            }
-            response.body?.string().orEmpty()
-        }
+        val body = fetch(url)
         parse(body).also { runCatching { store?.write(key, body) } }
+    }
+
+    private suspend fun fetch(url: HttpUrl): String {
+        var attempt = 0
+        while (true) {
+            val waitSeconds = Http.client.newCall(Request.Builder().url(url).build()).execute().use { response ->
+                when {
+                    response.isSuccessful -> return response.body?.string().orEmpty()
+                    response.code == 429 && attempt < RATE_LIMIT_RETRIES ->
+                        response.header("Retry-After")?.toLongOrNull()?.coerceIn(1, 10) ?: (3L shl attempt)
+                    else -> throw XtreamException(XtreamException.Reason.HTTP, response.code)
+                }
+            }
+            attempt++
+            delay(waitSeconds * 1000)
+        }
     }
 
     private fun parseEntry(kind: Kind, o: JSONObject): Entry? = when (kind) {
@@ -201,6 +213,8 @@ class XtreamApi(val account: Account, private val cache: CatalogCache? = null) {
             .getOrDefault(s)
 
     companion object {
+        private const val RATE_LIMIT_RETRIES = 2
+
         fun normalizeServer(raw: String): String {
             var s = raw.trim()
             if (!s.startsWith("http://", ignoreCase = true) && !s.startsWith("https://", ignoreCase = true)) {

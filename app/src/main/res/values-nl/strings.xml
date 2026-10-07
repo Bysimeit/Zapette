@@ -70,5 +70,6 @@
     <string name="error_invalid_url">Ongeldig serveradres.</string>
     <string name="error_http_denied">Toegang geweigerd door de server (HTTP %1$d).</string>
     <string name="error_http_404">API niet gevonden (HTTP 404). Controleer het adres en de poort.</string>
+    <string name="error_http_too_many">De server krijgt te veel verzoeken (HTTP 429). Probeer het over een paar seconden opnieuw.</string>
     <string name="error_http_other">Serverfout (HTTP %1$d).</string>
 </resources>

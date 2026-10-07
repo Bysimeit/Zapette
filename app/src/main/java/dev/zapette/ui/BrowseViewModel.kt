@@ -367,6 +367,7 @@ fun Throwable.userMessage(context: Context): String = when (this) {
         XtreamException.Reason.BAD_RESPONSE -> context.getString(R.string.error_bad_response)
         XtreamException.Reason.HTTP -> when (httpCode) {
             401, 403 -> context.getString(R.string.error_http_denied, httpCode)
+            429 -> context.getString(R.string.error_http_too_many)
             404 -> context.getString(R.string.error_http_404)
             else -> context.getString(R.string.error_http_other, httpCode)
         }
