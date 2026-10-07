@@ -100,7 +100,7 @@ fun BrowseScreen(
         }
         when (val t = vm.tab) {
             Tab.SEARCH -> SearchPanel(vm, onOpenSeries = openSeries, onPlay = onPlay, gridFocus = gridFocus)
-            Tab.ACCOUNT -> AccountPanel(vm, onLoggedOut = onLoggedOut)
+            Tab.SETTINGS -> SettingsPanel(vm, onLoggedOut = onLoggedOut)
             else -> key(t.kind) {
                 KindPanel(vm, t.kind!!, onOpenSeries = openSeries, onPlay = onPlay, gridFocus = gridFocus)
             }

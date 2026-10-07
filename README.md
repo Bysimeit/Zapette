@@ -10,7 +10,7 @@ Available in English, French, Dutch and German.
 ## Features
 
 - Xtream Codes sign-in (you can also paste a full M3U link `get.php?username=…&password=…`)
-- **Live TV**, **Movies**, **Series**, **Search** and **Account** tabs
+- **Live TV**, **Movies**, **Series**, **Search** and **Settings** tabs
 - Categories open as you move over them, like on a TV box
 - **Favorites**: hold OK on a channel, movie or series
 - **Media3 / ExoPlayer** player:
@@ -22,7 +22,7 @@ Available in English, French, Dutch and German.
 - Live stream format of your choice: MPEG-TS (fast zapping) or HLS
 - Custom User-Agent (for providers that block unknown apps)
 - Nothing is sent anywhere but your IPTV server: credentials, favorites and resume positions stay on the TV
-- Per-app language selection on Android 13+
+- Language picker in Settings (also available as the per-app language in Android 13+ system settings)
 
 ## Building
 
@@ -79,7 +79,8 @@ app/src/main/java/dev/zapette/
 app/src/main/res/values*/strings.xml   Translations (en, fr, nl, de)
 ```
 
-Adding a language: copy `app/src/main/res/values/strings.xml` to `values-xx/strings.xml` and translate it.
+Adding a language: copy `app/src/main/res/values/strings.xml` to `values-xx/strings.xml`, translate it, and add `xx` to
+`AppLanguage.tags` in `ui/AppLanguage.kt`.
 
 ## Disclaimer
 

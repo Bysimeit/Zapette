@@ -1,5 +1,6 @@
 package dev.zapette.player
 
+import android.content.Context
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -34,6 +35,7 @@ import dev.zapette.data.EpgItem
 import dev.zapette.data.Http
 import dev.zapette.data.Prefs
 import dev.zapette.data.XtreamApi
+import dev.zapette.ui.AppLanguage
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -57,6 +59,10 @@ class PlayerActivity : ComponentActivity() {
     private val isLive get() = items.firstOrNull()?.isLive == true
 
     private var liveIndex = 0
+
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(AppLanguage.wrap(newBase))
+    }
     private var lastVodIndex = 0
     private var retries = 0
     private var stopped = false

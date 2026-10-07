@@ -4,7 +4,7 @@
     <string name="tab_movies">Filme</string>
     <string name="tab_series">Serien</string>
     <string name="tab_search">Suche</string>
-    <string name="tab_account">Konto</string>
+    <string name="tab_settings">Einstellungen</string>
     <string name="login_subtitle">Verbinde dein Xtream-Codes-Abo.</string>
     <string name="login_server">Serveradresse</string>
     <string name="login_server_hint">http://beispiel.de:8080 oder vollständiger M3U-Link</string>
@@ -34,6 +34,8 @@
     <string name="status_loading">Wird geladen…</string>
     <string name="status_trial">%1$s (Test)</string>
     <string name="expiration_unlimited">Unbegrenzt</string>
+    <string name="section_language">Sprache</string>
+    <string name="language_system">Systemsprache</string>
     <string name="section_live_format">Wiedergabe von Live-Sendern</string>
     <string name="live_format_help">MPEG-TS schaltet schneller um. Wenn manche Sender ruckeln oder nicht starten, probiere HLS.</string>
     <string name="section_user_agent">User-Agent</string>

@@ -1,5 +1,6 @@
 package dev.zapette.ui
 
+import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,6 +19,7 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -79,9 +81,11 @@ fun SearchPanel(
 }
 
 @Composable
-fun AccountPanel(vm: BrowseViewModel, onLoggedOut: () -> Unit) {
+fun SettingsPanel(vm: BrowseViewModel, onLoggedOut: () -> Unit) {
     LaunchedEffect(Unit) { vm.loadAccountInfo() }
     val account = vm.prefs.account
+    val activity = LocalActivity.current
+    val language = remember(activity) { activity?.let { AppLanguage.current(it) } }
 
     Column(
         Modifier
@@ -108,6 +112,22 @@ fun AccountPanel(vm: BrowseViewModel, onLoggedOut: () -> Unit) {
                     } ?: stringResource(R.string.expiration_unlimited),
                 )
                 InfoLine(stringResource(R.string.label_connections), "${i.activeConnections ?: "?"} / ${i.maxConnections ?: "?"}")
+            }
+        }
+
+        Section(stringResource(R.string.section_language))
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Chip(
+                stringResource(R.string.language_system),
+                selected = language == null,
+                onClick = { activity?.let { AppLanguage.set(it, null) } },
+            )
+            AppLanguage.tags.forEach { tag ->
+                Chip(
+                    AppLanguage.label(tag),
+                    selected = language == tag,
+                    onClick = { activity?.let { AppLanguage.set(it, tag) } },
+                )
             }
         }
 

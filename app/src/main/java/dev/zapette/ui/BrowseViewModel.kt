@@ -52,7 +52,7 @@ enum class Tab(@StringRes val label: Int, val kind: Kind?) {
     MOVIE(R.string.tab_movies, Kind.MOVIE),
     SERIES(R.string.tab_series, Kind.SERIES),
     SEARCH(R.string.tab_search, null),
-    ACCOUNT(R.string.tab_account, null),
+    SETTINGS(R.string.tab_settings, null),
 }
 
 class KindState {
