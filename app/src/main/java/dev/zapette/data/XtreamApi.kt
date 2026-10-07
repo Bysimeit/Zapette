@@ -15,7 +15,7 @@ class XtreamException(val reason: Reason, val httpCode: Int = 0) : IOException(r
     enum class Reason { NOT_XTREAM, AUTH_REJECTED, INVALID_URL, HTTP, BAD_RESPONSE }
 }
 
-class XtreamApi(val account: Account) {
+class XtreamApi(val account: Account, private val cache: CatalogCache? = null) {
 
     val base: String = normalizeServer(account.server)
 
@@ -39,7 +39,7 @@ class XtreamApi(val account: Account) {
             Kind.MOVIE -> "get_vod_categories"
             Kind.SERIES -> "get_series_categories"
         }
-        return call(apiUrl(action)) { body ->
+        return call(apiUrl(action), cached = true) { body ->
             jsonList(body).mapNotNull { o ->
                 val id = o.str("category_id") ?: return@mapNotNull null
                 Category(id, o.str("category_name") ?: "#$id")
@@ -54,13 +54,13 @@ class XtreamApi(val account: Account) {
             Kind.SERIES -> "get_series"
         }
         val params = if (categoryId != null) arrayOf("category_id" to categoryId) else emptyArray()
-        return call(apiUrl(action, *params)) { body ->
+        return call(apiUrl(action, *params), cached = true) { body ->
             jsonList(body).mapNotNull { parseEntry(kind, it) }
         }
     }
 
     suspend fun seriesInfo(seriesId: Int): SeriesDetail =
-        call(apiUrl("get_series_info", "series_id" to seriesId.toString())) { body ->
+        call(apiUrl("get_series_info", "series_id" to seriesId.toString()), cached = true) { body ->
             val o = JSONObject(body)
             val info = o.optJSONObject("info") ?: JSONObject()
             val seasons = sortedMapOf<Int, MutableList<Episode>>()
@@ -145,14 +145,23 @@ class XtreamApi(val account: Account) {
         return builder.build()
     }
 
-    private suspend fun <T> call(url: HttpUrl, parse: (String) -> T): T = withContext(Dispatchers.IO) {
+    private suspend fun <T> call(
+        url: HttpUrl,
+        cached: Boolean = false,
+        parse: (String) -> T,
+    ): T = withContext(Dispatchers.IO) {
+        val store = cache.takeIf { cached }
+        val key = url.toString()
+        store?.read(key)?.let { body ->
+            runCatching { parse(body) }.onSuccess { return@withContext it }
+        }
         val body = Http.client.newCall(Request.Builder().url(url).build()).execute().use { response ->
             if (!response.isSuccessful) {
                 throw XtreamException(XtreamException.Reason.HTTP, response.code)
             }
             response.body?.string().orEmpty()
         }
-        parse(body)
+        parse(body).also { runCatching { store?.write(key, body) } }
     }
 
     private fun parseEntry(kind: Kind, o: JSONObject): Entry? = when (kind) {

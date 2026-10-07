@@ -118,7 +118,7 @@ private fun KindPanel(
     gridFocus: FocusRequester,
 ) {
     val st = vm.state(kind)
-    LaunchedEffect(kind, vm.api) { vm.ensureCategories(kind) }
+    LaunchedEffect(kind, vm.api, vm.catalogVersion) { vm.ensureCategories(kind) }
 
     Row(Modifier.fillMaxSize()) {
         Box(Modifier.width(260.dp).fillMaxHeight()) {
