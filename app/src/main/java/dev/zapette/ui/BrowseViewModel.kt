@@ -94,7 +94,7 @@ class BrowseViewModel(app: Application) : AndroidViewModel(app) {
 
     var seriesDetail by mutableStateOf<Load<SeriesDetail>>(Load.Idle)
         private set
-    var seriesLoadedId: Int? = null
+    var seriesLoadedId by mutableStateOf<Int?>(null)
         private set
     private var seriesJob: Job? = null
 
