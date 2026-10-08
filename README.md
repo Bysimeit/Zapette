@@ -94,6 +94,6 @@ legally entitled to access.
 Zapette is released under the [PolyForm Noncommercial License 1.0.0](LICENSE.md): you are free to use, study, modify
 and share it for any noncommercial purpose. Selling it, or using it in a paid product or service, is not allowed.
 
-Zapette uses [AndroidX Media3](https://github.com/androidx/media), [OkHttp](https://square.github.io/okhttp/),
+Zapette uses [AndroidX Media3](https://github.com/androidx/media), [OkHttp](https://github.com/lysine-dev/okhttp),
 [Coil](https://coil-kt.github.io/coil/) and [Jellyfin's Media3 FFmpeg decoder](https://github.com/jellyfin/jellyfin-androidx-media),
 each under its own license.
