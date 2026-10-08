@@ -49,6 +49,8 @@
     <string name="season_n">Season %1$d</string>
     <string name="resume_at">▶ Resume at %1$s</string>
     <string name="player_epg_loading">Loading TV guide…</string>
+    <string name="player_prev_channel">▼  Previous channel</string>
+    <string name="player_next_channel">Next channel  ▲</string>
     <string name="player_epg_none">No TV guide for this channel</string>
     <string name="player_now">Now</string>
     <string name="player_next">Next</string>

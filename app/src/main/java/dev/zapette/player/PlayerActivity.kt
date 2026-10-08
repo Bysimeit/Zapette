@@ -1,10 +1,14 @@
 package dev.zapette.player
 
+import android.annotation.SuppressLint
 import android.content.Context
+import android.content.pm.ActivityInfo
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.view.GestureDetector
 import android.view.KeyEvent
+import android.view.MotionEvent
 import android.view.View
 import android.widget.TextView
 import androidx.activity.ComponentActivity
@@ -36,6 +40,8 @@ import dev.zapette.data.Http
 import dev.zapette.data.Prefs
 import dev.zapette.data.XtreamApi
 import dev.zapette.ui.AppLanguage
+import dev.zapette.ui.isTv
+import kotlin.math.abs
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -59,10 +65,6 @@ class PlayerActivity : ComponentActivity() {
     private val isLive get() = items.firstOrNull()?.isLive == true
 
     private var liveIndex = 0
-
-    override fun attachBaseContext(newBase: Context) {
-        super.attachBaseContext(AppLanguage.wrap(newBase))
-    }
     private var lastVodIndex = 0
     private var retries = 0
     private var stopped = false
@@ -80,6 +82,10 @@ class PlayerActivity : ComponentActivity() {
         player.play()
     }
 
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(AppLanguage.wrap(newBase))
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         items = PlaybackQueue.items
@@ -87,6 +93,8 @@ class PlayerActivity : ComponentActivity() {
             finish()
             return
         }
+        val isTv = isTv()
+        if (!isTv) requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
         setContentView(R.layout.activity_player)
         hideSystemBars()
 
@@ -108,6 +116,7 @@ class PlayerActivity : ComponentActivity() {
         if (isLive) {
             playerView.useController = false
             liveIndex = PlaybackQueue.startIndex
+            if (!isTv) setUpLiveTouch()
             startLive()
             showOverlay()
         } else {
@@ -168,6 +177,33 @@ class PlayerActivity : ComponentActivity() {
         player.setMediaItem(toMediaItem(items[liveIndex]))
         player.prepare()
         player.play()
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
+    private fun setUpLiveTouch() {
+        findViewById<View>(R.id.touch_controls).visibility = View.VISIBLE
+        findViewById<View>(R.id.prev_channel).setOnClickListener { zap(-1) }
+        findViewById<View>(R.id.next_channel).setOnClickListener { zap(+1) }
+
+        val minSwipe = SWIPE_MIN_DP * resources.displayMetrics.density
+        val detector = GestureDetector(this, object : GestureDetector.SimpleOnGestureListener() {
+            override fun onDown(e: MotionEvent): Boolean = true
+
+            override fun onSingleTapConfirmed(e: MotionEvent): Boolean {
+                if (overlay.visibility == View.VISIBLE) hideOverlay() else showOverlay()
+                return true
+            }
+
+            override fun onFling(e1: MotionEvent?, e2: MotionEvent, velocityX: Float, velocityY: Float): Boolean {
+                val start = e1 ?: return false
+                val dx = e2.x - start.x
+                val dy = e2.y - start.y
+                if (abs(dy) < abs(dx) || abs(dy) < minSwipe) return false
+                zap(if (dy < 0) +1 else -1)
+                return true
+            }
+        })
+        playerView.setOnTouchListener { _, event -> detector.onTouchEvent(event) }
     }
 
     private fun zap(delta: Int) {
@@ -502,5 +538,6 @@ class PlayerActivity : ComponentActivity() {
         const val EPG_CACHE_MS = 120_000L
         const val RESUME_MIN_MS = 30_000L
         const val END_MARGIN_MS = 120_000L
+        const val SWIPE_MIN_DP = 60
     }
 }

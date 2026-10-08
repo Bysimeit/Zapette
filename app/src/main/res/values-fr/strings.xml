@@ -48,6 +48,8 @@
     <string name="season_n">Saison %1$d</string>
     <string name="resume_at">▶ Reprendre à %1$s</string>
     <string name="player_epg_loading">Guide des programmes…</string>
+    <string name="player_prev_channel">▼  Chaîne précédente</string>
+    <string name="player_next_channel">Chaîne suivante  ▲</string>
     <string name="player_epg_none">Pas de guide des programmes pour cette chaîne</string>
     <string name="player_now">Maintenant</string>
     <string name="player_next">Ensuite</string>

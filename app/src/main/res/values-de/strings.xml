@@ -48,6 +48,8 @@
     <string name="season_n">Staffel %1$d</string>
     <string name="resume_at">▶ Fortsetzen bei %1$s</string>
     <string name="player_epg_loading">TV-Programm wird geladen…</string>
+    <string name="player_prev_channel">▼  Vorheriger Sender</string>
+    <string name="player_next_channel">Nächster Sender  ▲</string>
     <string name="player_epg_none">Kein TV-Programm für diesen Sender</string>
     <string name="player_now">Jetzt</string>
     <string name="player_next">Danach</string>

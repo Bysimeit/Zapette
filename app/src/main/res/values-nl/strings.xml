@@ -48,6 +48,8 @@
     <string name="season_n">Seizoen %1$d</string>
     <string name="resume_at">▶ Hervatten op %1$s</string>
     <string name="player_epg_loading">Tv-gids laden…</string>
+    <string name="player_prev_channel">▼  Vorige zender</string>
+    <string name="player_next_channel">Volgende zender  ▲</string>
     <string name="player_epg_none">Geen tv-gids voor deze zender</string>
     <string name="player_now">Nu</string>
     <string name="player_next">Hierna</string>

@@ -2,15 +2,24 @@ package dev.zapette.ui
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.union
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -30,10 +39,17 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge(
+            statusBarStyle = SystemBarStyle.dark(Color.TRANSPARENT),
+            navigationBarStyle = SystemBarStyle.dark(Color.TRANSPARENT),
+        )
         super.onCreate(savedInstanceState)
+        val isTv = isTv()
         setContent {
-            ZapetteTheme {
-                ZapetteApp(vm)
+            CompositionLocalProvider(LocalIsTv provides isTv) {
+                ZapetteTheme {
+                    ZapetteApp(vm)
+                }
             }
         }
     }
@@ -60,7 +76,12 @@ private fun ZapetteApp(vm: BrowseViewModel) {
 
     val play: () -> Unit = { context.openPlayer() }
 
-    Box(Modifier.fillMaxSize().background(ZColors.Bg)) {
+    Box(
+        Modifier
+            .fillMaxSize()
+            .background(ZColors.Bg)
+            .windowInsetsPadding(WindowInsets.systemBars.union(WindowInsets.displayCutout)),
+    ) {
         when (val screen = stack.last()) {
             Screen.Login -> LoginScreen(vm, onLoggedIn = { stack = listOf(Screen.Browse) })
             Screen.Browse -> saveableState.SaveableStateProvider("browse") {

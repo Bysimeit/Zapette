@@ -1,6 +1,7 @@
 # Zapette
 
-A free, ad-free IPTV player for **Google TV / Android TV**, built for the remote control and for 4K.
+A free, ad-free IPTV player for **Google TV / Android TV** and **Android phones and tablets**, built for the remote
+control, touch screens and 4K.
 
 Zapette does not ship any channels: it is a player. It connects to an **Xtream Codes** subscription
 (server address + username + password) that you already have.
@@ -12,10 +13,11 @@ Available in English, French, Dutch and German.
 - Xtream Codes sign-in (you can also paste a full M3U link `get.php?username=…&password=…`)
 - **Live TV**, **Movies**, **Series**, **Search** and **Settings** tabs
 - Categories open as you move over them, like on a TV box
-- **Favorites**: hold OK on a channel, movie or series
+- **Favorites**: hold OK (or long-press on a touch screen) on a channel, movie or series
+- Phone layout in portrait (bottom tab bar, scrolling category strip) and the TV layout in landscape
 - **Media3 / ExoPlayer** player:
   - hardware decoding (4K HEVC, VP9, AV1 and HDR, depending on what the TV supports), with automatic fallback to another decoder
-  - Live TV: ↑/↓ or CH+/CH- to zap, OK for the info banner with the TV guide (now / next) and technical details (resolution, codec, fps, HDR, audio)
+  - Live TV: ↑/↓ or CH+/CH- to zap (swipe up/down or the on-screen buttons on a phone), OK or a tap for the info banner with the TV guide (now / next) and technical details (resolution, codec, fps, HDR, audio)
   - Movies and series: ←/→ to seek (faster when held), automatic resume where you left off, episodes play back to back
   - audio track and subtitle selection from the player controls
   - automatic reconnection when the stream drops
