@@ -141,10 +141,18 @@ fun LoginScreen(vm: BrowseViewModel, onLoggedIn: () -> Unit) {
             )
             Spacer(Modifier.height(16.dp))
             Text(
-                stringResource(R.string.login_tip),
+                stringResource(R.string.login_tip_m3u),
                 color = ZColors.TextDim,
                 fontSize = 12.sp,
             )
+            if (isTv) {
+                Spacer(Modifier.height(6.dp))
+                Text(
+                    stringResource(R.string.login_tip_tv),
+                    color = ZColors.TextDim,
+                    fontSize = 12.sp,
+                )
+            }
         }
     }
 }

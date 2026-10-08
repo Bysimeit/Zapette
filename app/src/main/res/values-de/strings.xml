@@ -13,7 +13,8 @@
     <string name="login_button">Anmelden</string>
     <string name="login_connecting">Anmeldung…</string>
     <string name="login_missing_fields">Bitte fülle alle drei Felder aus.</string>
-    <string name="login_tip">Tipp: Mit der Google-TV-App auf deinem Handy kannst du über die Handytastatur tippen (oder einfügen).</string>
+    <string name="login_tip_m3u">Tipp: Füge deinen vollständigen M3U-Link (get.php?username=…&amp;password=…) in das Serverfeld ein, dann werden Benutzername und Passwort automatisch ausgefüllt.</string>
+    <string name="login_tip_tv">Auf Google TV kannst du mit der Google-TV-App auf deinem Handy über die Handytastatur tippen (oder einfügen).</string>
     <string name="category_favorites">★  Favoriten</string>
     <string name="category_all">Alle</string>
     <string name="pick_category">Wähle eine Kategorie.</string>

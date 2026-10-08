@@ -13,7 +13,8 @@
     <string name="login_button">Inloggen</string>
     <string name="login_connecting">Bezig met inloggen…</string>
     <string name="login_missing_fields">Vul alle drie de velden in.</string>
-    <string name="login_tip">Tip: met de Google TV-app op je telefoon kun je typen (of plakken) met het toetsenbord van je telefoon.</string>
+    <string name="login_tip_m3u">Tip: plak je volledige M3U-link (get.php?username=…&amp;password=…) in het serverveld, dan worden gebruikersnaam en wachtwoord automatisch ingevuld.</string>
+    <string name="login_tip_tv">Op Google TV kun je met de Google TV-app op je telefoon typen (of plakken) met het toetsenbord van je telefoon.</string>
     <string name="category_favorites">★  Favorieten</string>
     <string name="category_all">Alles</string>
     <string name="pick_category">Kies een categorie.</string>

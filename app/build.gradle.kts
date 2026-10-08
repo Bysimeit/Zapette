@@ -12,7 +12,7 @@ android {
         minSdk = 24
         targetSdk = 36
         versionCode = System.getenv("ZAPETTE_VERSION_CODE")?.toInt() ?: 1
-        versionName = System.getenv("ZAPETTE_VERSION_NAME") ?: "0.1.0"
+        versionName = System.getenv("ZAPETTE_VERSION_NAME") ?: "1.1.0"
     }
 
     signingConfigs {

@@ -14,7 +14,8 @@
     <string name="login_button">Sign in</string>
     <string name="login_connecting">Signing in…</string>
     <string name="login_missing_fields">Please fill in all three fields.</string>
-    <string name="login_tip">Tip: the Google TV app on your phone lets you type (or paste) with your phone keyboard.</string>
+    <string name="login_tip_m3u">Tip: paste your full M3U link (get.php?username=…&amp;password=…) into the server field and the username and password are filled in for you.</string>
+    <string name="login_tip_tv">On Google TV, the Google TV app on your phone lets you type (or paste) with your phone keyboard.</string>
     <string name="category_favorites">★  Favorites</string>
     <string name="category_all">All</string>
     <string name="pick_category">Pick a category.</string>

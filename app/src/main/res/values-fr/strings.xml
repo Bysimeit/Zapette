@@ -13,7 +13,8 @@
     <string name="login_button">Se connecter</string>
     <string name="login_connecting">Connexion…</string>
     <string name="login_missing_fields">Remplis les trois champs.</string>
-    <string name="login_tip">Astuce : l\'app Google TV sur ton téléphone permet de taper (ou coller) avec le clavier du téléphone.</string>
+    <string name="login_tip_m3u">Astuce : colle ton lien M3U complet (get.php?username=…&amp;password=…) dans le champ du serveur, le nom d\'utilisateur et le mot de passe se remplissent tout seuls.</string>
+    <string name="login_tip_tv">Sur Google TV, l\'app Google TV de ton téléphone permet de taper (ou coller) avec le clavier du téléphone.</string>
     <string name="category_favorites">★  Favoris</string>
     <string name="category_all">Tout</string>
     <string name="pick_category">Choisis une catégorie.</string>
