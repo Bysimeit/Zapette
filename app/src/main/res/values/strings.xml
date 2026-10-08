@@ -5,7 +5,7 @@
     <string name="tab_movies">Movies</string>
     <string name="tab_series">Series</string>
     <string name="tab_search">Search</string>
-    <string name="tab_account">Account</string>
+    <string name="tab_settings">Settings</string>
     <string name="login_subtitle">Connect your Xtream Codes subscription.</string>
     <string name="login_server">Server address</string>
     <string name="login_server_hint">http://example.com:8080 or full M3U link</string>
@@ -14,7 +14,8 @@
     <string name="login_button">Sign in</string>
     <string name="login_connecting">Signing in…</string>
     <string name="login_missing_fields">Please fill in all three fields.</string>
-    <string name="login_tip">Tip: the Google TV app on your phone lets you type (or paste) with your phone keyboard.</string>
+    <string name="login_tip_m3u">Tip: paste your full M3U link (get.php?username=…&amp;password=…) into the server field and the username and password are filled in for you.</string>
+    <string name="login_tip_tv">On Google TV, the Google TV app on your phone lets you type (or paste) with your phone keyboard.</string>
     <string name="category_favorites">★  Favorites</string>
     <string name="category_all">All</string>
     <string name="pick_category">Pick a category.</string>
@@ -35,6 +36,8 @@
     <string name="status_loading">Loading…</string>
     <string name="status_trial">%1$s (trial)</string>
     <string name="expiration_unlimited">Unlimited</string>
+    <string name="section_language">Language</string>
+    <string name="language_system">System default</string>
     <string name="section_live_format">Live channel playback</string>
     <string name="live_format_help">MPEG-TS switches channels faster. If some channels stutter or won\'t start, try HLS.</string>
     <string name="section_user_agent">User-Agent</string>
@@ -47,6 +50,8 @@
     <string name="season_n">Season %1$d</string>
     <string name="resume_at">▶ Resume at %1$s</string>
     <string name="player_epg_loading">Loading TV guide…</string>
+    <string name="player_prev_channel">▼  Previous channel</string>
+    <string name="player_next_channel">Next channel  ▲</string>
     <string name="player_epg_none">No TV guide for this channel</string>
     <string name="player_now">Now</string>
     <string name="player_next">Next</string>
@@ -71,5 +76,6 @@
     <string name="error_invalid_url">Invalid server address.</string>
     <string name="error_http_denied">Access denied by the server (HTTP %1$d).</string>
     <string name="error_http_404">API not found (HTTP 404). Check the address and port.</string>
+    <string name="error_http_too_many">The server is receiving too many requests (HTTP 429). Try again in a few seconds.</string>
     <string name="error_http_other">Server error (HTTP %1$d).</string>
 </resources>

@@ -4,7 +4,7 @@
     <string name="tab_movies">Films</string>
     <string name="tab_series">Séries</string>
     <string name="tab_search">Rechercher</string>
-    <string name="tab_account">Compte</string>
+    <string name="tab_settings">Paramètres</string>
     <string name="login_subtitle">Connecte ton abonnement Xtream Codes.</string>
     <string name="login_server">Adresse du serveur</string>
     <string name="login_server_hint">http://exemple.com:8080 ou lien M3U complet</string>
@@ -13,7 +13,8 @@
     <string name="login_button">Se connecter</string>
     <string name="login_connecting">Connexion…</string>
     <string name="login_missing_fields">Remplis les trois champs.</string>
-    <string name="login_tip">Astuce : l\'app Google TV sur ton téléphone permet de taper (ou coller) avec le clavier du téléphone.</string>
+    <string name="login_tip_m3u">Astuce : colle ton lien M3U complet (get.php?username=…&amp;password=…) dans le champ du serveur, le nom d\'utilisateur et le mot de passe se remplissent tout seuls.</string>
+    <string name="login_tip_tv">Sur Google TV, l\'app Google TV de ton téléphone permet de taper (ou coller) avec le clavier du téléphone.</string>
     <string name="category_favorites">★  Favoris</string>
     <string name="category_all">Tout</string>
     <string name="pick_category">Choisis une catégorie.</string>
@@ -34,6 +35,8 @@
     <string name="status_loading">Chargement…</string>
     <string name="status_trial">%1$s (essai)</string>
     <string name="expiration_unlimited">Illimité</string>
+    <string name="section_language">Langue</string>
+    <string name="language_system">Langue du système</string>
     <string name="section_live_format">Lecture des chaînes en direct</string>
     <string name="live_format_help">MPEG-TS zappe plus vite. Si certaines chaînes saccadent ou refusent de démarrer, essaie HLS.</string>
     <string name="section_user_agent">User-Agent</string>
@@ -46,6 +49,8 @@
     <string name="season_n">Saison %1$d</string>
     <string name="resume_at">▶ Reprendre à %1$s</string>
     <string name="player_epg_loading">Guide des programmes…</string>
+    <string name="player_prev_channel">▼  Chaîne précédente</string>
+    <string name="player_next_channel">Chaîne suivante  ▲</string>
     <string name="player_epg_none">Pas de guide des programmes pour cette chaîne</string>
     <string name="player_now">Maintenant</string>
     <string name="player_next">Ensuite</string>
@@ -70,5 +75,6 @@
     <string name="error_invalid_url">Adresse du serveur invalide.</string>
     <string name="error_http_denied">Accès refusé par le serveur (HTTP %1$d).</string>
     <string name="error_http_404">API introuvable (HTTP 404). Vérifie l\'adresse et le port.</string>
+    <string name="error_http_too_many">Le serveur reçoit trop de requêtes (HTTP 429). Réessaie dans quelques secondes.</string>
     <string name="error_http_other">Erreur du serveur (HTTP %1$d).</string>
 </resources>

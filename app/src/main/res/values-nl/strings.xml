@@ -4,7 +4,7 @@
     <string name="tab_movies">Films</string>
     <string name="tab_series">Series</string>
     <string name="tab_search">Zoeken</string>
-    <string name="tab_account">Account</string>
+    <string name="tab_settings">Instellingen</string>
     <string name="login_subtitle">Koppel je Xtream Codes-abonnement.</string>
     <string name="login_server">Serveradres</string>
     <string name="login_server_hint">http://voorbeeld.com:8080 of volledige M3U-link</string>
@@ -13,7 +13,8 @@
     <string name="login_button">Inloggen</string>
     <string name="login_connecting">Bezig met inloggen…</string>
     <string name="login_missing_fields">Vul alle drie de velden in.</string>
-    <string name="login_tip">Tip: met de Google TV-app op je telefoon kun je typen (of plakken) met het toetsenbord van je telefoon.</string>
+    <string name="login_tip_m3u">Tip: plak je volledige M3U-link (get.php?username=…&amp;password=…) in het serverveld, dan worden gebruikersnaam en wachtwoord automatisch ingevuld.</string>
+    <string name="login_tip_tv">Op Google TV kun je met de Google TV-app op je telefoon typen (of plakken) met het toetsenbord van je telefoon.</string>
     <string name="category_favorites">★  Favorieten</string>
     <string name="category_all">Alles</string>
     <string name="pick_category">Kies een categorie.</string>
@@ -34,6 +35,8 @@
     <string name="status_loading">Laden…</string>
     <string name="status_trial">%1$s (proef)</string>
     <string name="expiration_unlimited">Onbeperkt</string>
+    <string name="section_language">Taal</string>
+    <string name="language_system">Systeemtaal</string>
     <string name="section_live_format">Afspelen van live-zenders</string>
     <string name="live_format_help">MPEG-TS zapt sneller. Als sommige zenders haperen of niet starten, probeer dan HLS.</string>
     <string name="section_user_agent">User-Agent</string>
@@ -46,6 +49,8 @@
     <string name="season_n">Seizoen %1$d</string>
     <string name="resume_at">▶ Hervatten op %1$s</string>
     <string name="player_epg_loading">Tv-gids laden…</string>
+    <string name="player_prev_channel">▼  Vorige zender</string>
+    <string name="player_next_channel">Volgende zender  ▲</string>
     <string name="player_epg_none">Geen tv-gids voor deze zender</string>
     <string name="player_now">Nu</string>
     <string name="player_next">Hierna</string>
@@ -70,5 +75,6 @@
     <string name="error_invalid_url">Ongeldig serveradres.</string>
     <string name="error_http_denied">Toegang geweigerd door de server (HTTP %1$d).</string>
     <string name="error_http_404">API niet gevonden (HTTP 404). Controleer het adres en de poort.</string>
+    <string name="error_http_too_many">De server krijgt te veel verzoeken (HTTP 429). Probeer het over een paar seconden opnieuw.</string>
     <string name="error_http_other">Serverfout (HTTP %1$d).</string>
 </resources>

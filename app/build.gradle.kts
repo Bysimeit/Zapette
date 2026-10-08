@@ -12,7 +12,7 @@ android {
         minSdk = 24
         targetSdk = 36
         versionCode = System.getenv("ZAPETTE_VERSION_CODE")?.toInt() ?: 1
-        versionName = System.getenv("ZAPETTE_VERSION_NAME") ?: "0.1.0"
+        versionName = System.getenv("ZAPETTE_VERSION_NAME") ?: "1.1.0"
     }
 
     signingConfigs {
@@ -70,4 +70,6 @@ dependencies {
     implementation("io.coil-kt.coil3:coil-network-okhttp:3.2.0")
 
     testImplementation("junit:junit:4.13.2")
+    testImplementation("com.squareup.okhttp3:mockwebserver:4.12.0")
+    testImplementation("org.json:json:20250517")
 }

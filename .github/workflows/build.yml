@@ -38,9 +38,10 @@ jobs:
       - name: Compute version
         id: version
         run: |
+          current=$(grep -oP 'ZAPETTE_VERSION_NAME"\) \?: "\K[0-9.]+' app/build.gradle.kts)
           last=$(git tag -l 'v*' --sort=-v:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -n1 || true)
           if [ -z "$last" ]; then
-            last="v$(grep -oP 'ZAPETTE_VERSION_NAME"\) \?: "\K[0-9.]+' app/build.gradle.kts)"
+            last="v$current"
           fi
           IFS=. read -r major minor patch <<< "${last#v}"
 
@@ -53,7 +54,7 @@ jobs:
             name="$major.$minor.$patch"
             prerelease=false
           else
-            name="$major.$minor.$patch-dev.${{ github.run_number }}"
+            name="$current-dev.${{ github.run_number }}"
             prerelease=true
           fi
 

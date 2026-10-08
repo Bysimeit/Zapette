@@ -52,6 +52,42 @@
             android:layout_marginTop="8dp"
             android:textColor="@color/zapette_accent"
             android:textSize="14sp" />
+
+        <LinearLayout
+            android:id="@+id/touch_controls"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/prev_channel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/status_bg"
+                android:paddingStart="16dp"
+                android:paddingTop="10dp"
+                android:paddingEnd="16dp"
+                android:paddingBottom="10dp"
+                android:text="@string/player_prev_channel"
+                android:textColor="@android:color/white"
+                android:textSize="15sp" />
+
+            <TextView
+                android:id="@+id/next_channel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:background="@drawable/status_bg"
+                android:paddingStart="16dp"
+                android:paddingTop="10dp"
+                android:paddingEnd="16dp"
+                android:paddingBottom="10dp"
+                android:text="@string/player_next_channel"
+                android:textColor="@android:color/white"
+                android:textSize="15sp" />
+        </LinearLayout>
     </LinearLayout>
 
     <TextView

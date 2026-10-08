@@ -4,7 +4,7 @@
     <string name="tab_movies">Filme</string>
     <string name="tab_series">Serien</string>
     <string name="tab_search">Suche</string>
-    <string name="tab_account">Konto</string>
+    <string name="tab_settings">Einstellungen</string>
     <string name="login_subtitle">Verbinde dein Xtream-Codes-Abo.</string>
     <string name="login_server">Serveradresse</string>
     <string name="login_server_hint">http://beispiel.de:8080 oder vollständiger M3U-Link</string>
@@ -13,7 +13,8 @@
     <string name="login_button">Anmelden</string>
     <string name="login_connecting">Anmeldung…</string>
     <string name="login_missing_fields">Bitte fülle alle drei Felder aus.</string>
-    <string name="login_tip">Tipp: Mit der Google-TV-App auf deinem Handy kannst du über die Handytastatur tippen (oder einfügen).</string>
+    <string name="login_tip_m3u">Tipp: Füge deinen vollständigen M3U-Link (get.php?username=…&amp;password=…) in das Serverfeld ein, dann werden Benutzername und Passwort automatisch ausgefüllt.</string>
+    <string name="login_tip_tv">Auf Google TV kannst du mit der Google-TV-App auf deinem Handy über die Handytastatur tippen (oder einfügen).</string>
     <string name="category_favorites">★  Favoriten</string>
     <string name="category_all">Alle</string>
     <string name="pick_category">Wähle eine Kategorie.</string>
@@ -34,6 +35,8 @@
     <string name="status_loading">Wird geladen…</string>
     <string name="status_trial">%1$s (Test)</string>
     <string name="expiration_unlimited">Unbegrenzt</string>
+    <string name="section_language">Sprache</string>
+    <string name="language_system">Systemsprache</string>
     <string name="section_live_format">Wiedergabe von Live-Sendern</string>
     <string name="live_format_help">MPEG-TS schaltet schneller um. Wenn manche Sender ruckeln oder nicht starten, probiere HLS.</string>
     <string name="section_user_agent">User-Agent</string>
@@ -46,6 +49,8 @@
     <string name="season_n">Staffel %1$d</string>
     <string name="resume_at">▶ Fortsetzen bei %1$s</string>
     <string name="player_epg_loading">TV-Programm wird geladen…</string>
+    <string name="player_prev_channel">▼  Vorheriger Sender</string>
+    <string name="player_next_channel">Nächster Sender  ▲</string>
     <string name="player_epg_none">Kein TV-Programm für diesen Sender</string>
     <string name="player_now">Jetzt</string>
     <string name="player_next">Danach</string>
@@ -70,5 +75,6 @@
     <string name="error_invalid_url">Ungültige Serveradresse.</string>
     <string name="error_http_denied">Zugriff vom Server verweigert (HTTP %1$d).</string>
     <string name="error_http_404">API nicht gefunden (HTTP 404). Prüfe Adresse und Port.</string>
+    <string name="error_http_too_many">Der Server erhält zu viele Anfragen (HTTP 429). Versuche es in ein paar Sekunden erneut.</string>
     <string name="error_http_other">Serverfehler (HTTP %1$d).</string>
 </resources>

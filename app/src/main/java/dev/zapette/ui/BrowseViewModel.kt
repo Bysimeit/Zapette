@@ -13,6 +13,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import dev.zapette.data.Account
 import dev.zapette.data.AccountInfo
+import dev.zapette.data.CatalogCache
 import dev.zapette.data.Category
 import dev.zapette.data.Entry
 import dev.zapette.data.Episode
@@ -35,6 +36,7 @@ import kotlinx.coroutines.withContext
 import org.json.JSONException
 import java.net.ConnectException
 import java.net.SocketTimeoutException
+import java.io.File
 import java.net.UnknownHostException
 import java.text.Normalizer
 
@@ -50,7 +52,7 @@ enum class Tab(@StringRes val label: Int, val kind: Kind?) {
     MOVIE(R.string.tab_movies, Kind.MOVIE),
     SERIES(R.string.tab_series, Kind.SERIES),
     SEARCH(R.string.tab_search, null),
-    ACCOUNT(R.string.tab_account, null),
+    SETTINGS(R.string.tab_settings, null),
 }
 
 class KindState {
@@ -72,7 +74,9 @@ class BrowseViewModel(app: Application) : AndroidViewModel(app) {
 
     val prefs = Prefs(app)
 
-    var api by mutableStateOf(prefs.account?.let { XtreamApi(it) })
+    private val catalogCache = CatalogCache(File(app.cacheDir, "catalog"))
+
+    var api by mutableStateOf(prefs.account?.let { XtreamApi(it, catalogCache) })
         private set
 
     var tab by mutableStateOf(Tab.LIVE)
@@ -90,7 +94,7 @@ class BrowseViewModel(app: Application) : AndroidViewModel(app) {
 
     var seriesDetail by mutableStateOf<Load<SeriesDetail>>(Load.Idle)
         private set
-    var seriesLoadedId: Int? = null
+    var seriesLoadedId by mutableStateOf<Int?>(null)
         private set
     private var seriesJob: Job? = null
 
@@ -113,6 +117,9 @@ class BrowseViewModel(app: Application) : AndroidViewModel(app) {
     var resumeTick by mutableIntStateOf(0)
         private set
 
+    var catalogVersion by mutableIntStateOf(0)
+        private set
+
     var focusGridOnReturn = false
 
     init {
@@ -126,7 +133,7 @@ class BrowseViewModel(app: Application) : AndroidViewModel(app) {
             val saved = account.copy(server = candidate.base)
             prefs.account = saved
             resetData()
-            api = XtreamApi(saved)
+            api = XtreamApi(saved, catalogCache)
             Result.success(Unit)
         } catch (e: CancellationException) {
             throw e
@@ -159,6 +166,8 @@ class BrowseViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun clearCache() {
+        catalogCache.clear()
+        catalogVersion++
         streamCache.clear()
         allCache.clear()
         states.values.forEach { it.reset() }
@@ -176,6 +185,7 @@ class BrowseViewModel(app: Application) : AndroidViewModel(app) {
 
     fun onResumed() {
         resumeTick++
+        if (catalogCache.isExpired()) clearCache()
     }
 
     fun ensureCategories(kind: Kind) {
@@ -357,6 +367,7 @@ fun Throwable.userMessage(context: Context): String = when (this) {
         XtreamException.Reason.BAD_RESPONSE -> context.getString(R.string.error_bad_response)
         XtreamException.Reason.HTTP -> when (httpCode) {
             401, 403 -> context.getString(R.string.error_http_denied, httpCode)
+            429 -> context.getString(R.string.error_http_too_many)
             404 -> context.getString(R.string.error_http_404)
             else -> context.getString(R.string.error_http_other, httpCode)
         }

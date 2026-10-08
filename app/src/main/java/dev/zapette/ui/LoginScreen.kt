@@ -8,7 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
@@ -58,7 +58,8 @@ fun LoginScreen(vm: BrowseViewModel, onLoggedIn: () -> Unit) {
     val missingFields = stringResource(R.string.login_missing_fields)
     val fallbackError = stringResource(R.string.error_connect)
 
-    LaunchedEffect(Unit) { firstField.requestWhenReady() }
+    val isTv = LocalIsTv.current
+    LaunchedEffect(Unit) { if (isTv) firstField.requestWhenReady() }
 
     fun submit() {
         if (loading) return
@@ -79,10 +80,12 @@ fun LoginScreen(vm: BrowseViewModel, onLoggedIn: () -> Unit) {
     Box(Modifier.fillMaxSize().background(ZColors.Bg), contentAlignment = Alignment.Center) {
         Column(
             Modifier
-                .width(540.dp)
+                .padding(16.dp)
+                .widthIn(max = 540.dp)
+                .fillMaxWidth()
                 .background(ZColors.Surface, RoundedCornerShape(18.dp))
                 .verticalScroll(rememberScrollState())
-                .padding(36.dp),
+                .padding(if (isCompact()) 22.dp else 36.dp),
         ) {
             Text("Zapette", color = ZColors.Accent, fontSize = 34.sp, fontWeight = FontWeight.Bold)
             Text(
@@ -138,10 +141,18 @@ fun LoginScreen(vm: BrowseViewModel, onLoggedIn: () -> Unit) {
             )
             Spacer(Modifier.height(16.dp))
             Text(
-                stringResource(R.string.login_tip),
+                stringResource(R.string.login_tip_m3u),
                 color = ZColors.TextDim,
                 fontSize = 12.sp,
             )
+            if (isTv) {
+                Spacer(Modifier.height(6.dp))
+                Text(
+                    stringResource(R.string.login_tip_tv),
+                    color = ZColors.TextDim,
+                    fontSize = 12.sp,
+                )
+            }
         }
     }
 }

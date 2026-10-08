@@ -2,6 +2,7 @@ package dev.zapette.data
 
 import android.util.Base64
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrl
@@ -15,7 +16,7 @@ class XtreamException(val reason: Reason, val httpCode: Int = 0) : IOException(r
     enum class Reason { NOT_XTREAM, AUTH_REJECTED, INVALID_URL, HTTP, BAD_RESPONSE }
 }
 
-class XtreamApi(val account: Account) {
+class XtreamApi(val account: Account, private val cache: CatalogCache? = null) {
 
     val base: String = normalizeServer(account.server)
 
@@ -39,7 +40,7 @@ class XtreamApi(val account: Account) {
             Kind.MOVIE -> "get_vod_categories"
             Kind.SERIES -> "get_series_categories"
         }
-        return call(apiUrl(action)) { body ->
+        return call(apiUrl(action), cached = true) { body ->
             jsonList(body).mapNotNull { o ->
                 val id = o.str("category_id") ?: return@mapNotNull null
                 Category(id, o.str("category_name") ?: "#$id")
@@ -54,13 +55,13 @@ class XtreamApi(val account: Account) {
             Kind.SERIES -> "get_series"
         }
         val params = if (categoryId != null) arrayOf("category_id" to categoryId) else emptyArray()
-        return call(apiUrl(action, *params)) { body ->
+        return call(apiUrl(action, *params), cached = true) { body ->
             jsonList(body).mapNotNull { parseEntry(kind, it) }
         }
     }
 
     suspend fun seriesInfo(seriesId: Int): SeriesDetail =
-        call(apiUrl("get_series_info", "series_id" to seriesId.toString())) { body ->
+        call(apiUrl("get_series_info", "series_id" to seriesId.toString()), cached = true) { body ->
             val o = JSONObject(body)
             val info = o.optJSONObject("info") ?: JSONObject()
             val seasons = sortedMapOf<Int, MutableList<Episode>>()
@@ -145,14 +146,34 @@ class XtreamApi(val account: Account) {
         return builder.build()
     }
 
-    private suspend fun <T> call(url: HttpUrl, parse: (String) -> T): T = withContext(Dispatchers.IO) {
-        val body = Http.client.newCall(Request.Builder().url(url).build()).execute().use { response ->
-            if (!response.isSuccessful) {
-                throw XtreamException(XtreamException.Reason.HTTP, response.code)
-            }
-            response.body?.string().orEmpty()
+    private suspend fun <T> call(
+        url: HttpUrl,
+        cached: Boolean = false,
+        parse: (String) -> T,
+    ): T = withContext(Dispatchers.IO) {
+        val store = cache.takeIf { cached }
+        val key = url.toString()
+        store?.read(key)?.let { body ->
+            runCatching { parse(body) }.onSuccess { return@withContext it }
         }
-        parse(body)
+        val body = fetch(url)
+        parse(body).also { runCatching { store?.write(key, body) } }
+    }
+
+    private suspend fun fetch(url: HttpUrl): String {
+        var attempt = 0
+        while (true) {
+            val waitSeconds = Http.client.newCall(Request.Builder().url(url).build()).execute().use { response ->
+                when {
+                    response.isSuccessful -> return response.body?.string().orEmpty()
+                    response.code == 429 && attempt < RATE_LIMIT_RETRIES ->
+                        response.header("Retry-After")?.toLongOrNull()?.coerceIn(1, 10) ?: (3L shl attempt)
+                    else -> throw XtreamException(XtreamException.Reason.HTTP, response.code)
+                }
+            }
+            attempt++
+            delay(waitSeconds * 1000)
+        }
     }
 
     private fun parseEntry(kind: Kind, o: JSONObject): Entry? = when (kind) {
@@ -192,6 +213,8 @@ class XtreamApi(val account: Account) {
             .getOrDefault(s)
 
     companion object {
+        private const val RATE_LIMIT_RETRIES = 2
+
         fun normalizeServer(raw: String): String {
             var s = raw.trim()
             if (!s.startsWith("http://", ignoreCase = true) && !s.startsWith("https://", ignoreCase = true)) {

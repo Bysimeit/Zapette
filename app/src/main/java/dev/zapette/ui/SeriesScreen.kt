@@ -18,7 +18,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -50,53 +52,49 @@ import java.util.Locale
 @Composable
 fun SeriesScreen(vm: BrowseViewModel, series: Entry, onPlay: () -> Unit) {
     LaunchedEffect(series.id) { vm.loadSeries(series) }
+    val isTv = LocalIsTv.current
     val episodesFocus = remember { FocusRequester() }
     val detailState = if (vm.seriesLoadedId == series.id) vm.seriesDetail else Load.Loading
+    val detail = (detailState as? Load.Ok)?.value
 
-    Row(
-        Modifier
-            .fillMaxSize()
-            .background(ZColors.Bg)
-            .padding(horizontal = 40.dp, vertical = 28.dp),
-    ) {
-        Column(Modifier.width(250.dp).fillMaxHeight()) {
-            val detail = (detailState as? Load.Ok)?.value
-            Box(
-                Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(2f / 3f)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(ZColors.Placeholder),
-            ) {
-                val cover = series.image ?: detail?.cover
-                if (cover != null) {
-                    AsyncImage(
-                        model = cover,
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier.fillMaxSize(),
-                    )
-                }
-            }
-            Spacer(Modifier.height(14.dp))
-            Text(series.name, color = ZColors.Text, fontSize = 20.sp, fontWeight = FontWeight.Bold, maxLines = 2)
-            listOfNotNull(detail?.genre, detail?.releaseDate?.take(4)).joinToString(" · ").takeIf { it.isNotEmpty() }?.let {
-                Text(it, color = ZColors.TextDim, fontSize = 13.sp, modifier = Modifier.padding(top = 4.dp))
-            }
-            (detail?.plot ?: series.plot)?.let {
-                Text(
-                    it,
-                    color = ZColors.TextDim,
-                    fontSize = 13.sp,
-                    maxLines = 7,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.padding(top = 10.dp),
+    val poster: @Composable (Modifier) -> Unit = { modifier ->
+        Box(
+            modifier
+                .aspectRatio(2f / 3f)
+                .clip(RoundedCornerShape(12.dp))
+                .background(ZColors.Placeholder),
+        ) {
+            val cover = series.image ?: detail?.cover
+            if (cover != null) {
+                AsyncImage(
+                    model = cover,
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize(),
                 )
             }
         }
-        Spacer(Modifier.width(32.dp))
+    }
 
-        Box(Modifier.weight(1f).fillMaxHeight()) {
+    val info: @Composable (Int) -> Unit = { plotLines ->
+        Text(series.name, color = ZColors.Text, fontSize = 20.sp, fontWeight = FontWeight.Bold, maxLines = 2)
+        listOfNotNull(detail?.genre, detail?.releaseDate?.take(4)).joinToString(" · ").takeIf { it.isNotEmpty() }?.let {
+            Text(it, color = ZColors.TextDim, fontSize = 13.sp, modifier = Modifier.padding(top = 4.dp))
+        }
+        (detail?.plot ?: series.plot)?.let {
+            Text(
+                it,
+                color = ZColors.TextDim,
+                fontSize = 13.sp,
+                maxLines = plotLines,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.padding(top = 10.dp),
+            )
+        }
+    }
+
+    val episodesArea: @Composable (Modifier) -> Unit = { modifier ->
+        Box(modifier) {
             when (val d = detailState) {
                 Load.Idle, Load.Loading -> LoadingBox()
                 is Load.Err -> MessageBox(d.message, isError = true, onRetry = { vm.loadSeries(series, force = true) })
@@ -109,7 +107,7 @@ fun SeriesScreen(vm: BrowseViewModel, series: Entry, onPlay: () -> Unit) {
                         val season = if (selectedSeason in seasons) selectedSeason else seasons.first()
                         val episodes = d.value.seasons[season].orEmpty()
 
-                        LaunchedEffect(d) { episodesFocus.requestWhenReady() }
+                        LaunchedEffect(d) { if (isTv) episodesFocus.requestWhenReady() }
 
                         Column(Modifier.fillMaxSize()) {
                             LazyRow(
@@ -145,6 +143,45 @@ fun SeriesScreen(vm: BrowseViewModel, series: Entry, onPlay: () -> Unit) {
                 }
             }
         }
+    }
+
+    if (isCompact()) {
+        Column(
+            Modifier
+                .fillMaxSize()
+                .background(ZColors.Bg)
+                .padding(12.dp),
+        ) {
+            Row {
+                poster(Modifier.width(100.dp))
+                Spacer(Modifier.width(14.dp))
+                Column(Modifier.weight(1f)) { info(5) }
+            }
+            Spacer(Modifier.height(12.dp))
+            episodesArea(Modifier.weight(1f).fillMaxWidth())
+        }
+        return
+    }
+
+    val short = isShort()
+    Row(
+        Modifier
+            .fillMaxSize()
+            .background(ZColors.Bg)
+            .padding(horizontal = if (short) 16.dp else 40.dp, vertical = if (short) 10.dp else 28.dp),
+    ) {
+        Column(
+            Modifier
+                .width(if (short) 170.dp else 250.dp)
+                .fillMaxHeight()
+                .verticalScroll(rememberScrollState()),
+        ) {
+            poster(Modifier.fillMaxWidth())
+            Spacer(Modifier.height(14.dp))
+            info(7)
+        }
+        Spacer(Modifier.width(if (short) 20.dp else 32.dp))
+        episodesArea(Modifier.weight(1f).fillMaxHeight())
     }
 }
 

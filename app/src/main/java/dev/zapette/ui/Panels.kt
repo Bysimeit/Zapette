@@ -1,8 +1,10 @@
 package dev.zapette.ui
 
+import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -10,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -18,6 +21,7 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -41,25 +45,39 @@ fun SearchPanel(
     onPlay: () -> Unit,
     gridFocus: FocusRequester,
 ) {
+    val compact = isCompact()
+    val field: @Composable (Modifier) -> Unit = { modifier ->
+        OutlinedTextField(
+            value = vm.searchQuery,
+            onValueChange = vm::onSearchChange,
+            singleLine = true,
+            placeholder = { Text(stringResource(R.string.search_hint), color = ZColors.TextDim) },
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search, autoCorrectEnabled = false),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = ZColors.Accent,
+                cursorColor = ZColors.Accent,
+            ),
+            modifier = modifier,
+        )
+    }
+    val kinds: @Composable () -> Unit = {
+        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            Kind.entries.forEach { k ->
+                Chip(stringResource(k.label), selected = vm.searchKind == k, onClick = { vm.updateSearchKind(k) })
+            }
+        }
+    }
+
     Column(Modifier.fillMaxSize()) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            OutlinedTextField(
-                value = vm.searchQuery,
-                onValueChange = vm::onSearchChange,
-                singleLine = true,
-                placeholder = { Text(stringResource(R.string.search_hint), color = ZColors.TextDim) },
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search, autoCorrectEnabled = false),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = ZColors.Accent,
-                    cursorColor = ZColors.Accent,
-                ),
-                modifier = Modifier.width(460.dp),
-            )
-            Spacer(Modifier.width(16.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                Kind.entries.forEach { k ->
-                    Chip(stringResource(k.label), selected = vm.searchKind == k, onClick = { vm.updateSearchKind(k) })
-                }
+        if (compact) {
+            field(Modifier.fillMaxWidth())
+            Spacer(Modifier.height(8.dp))
+            kinds()
+        } else {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                field(Modifier.width(460.dp))
+                Spacer(Modifier.width(16.dp))
+                kinds()
             }
         }
         Spacer(Modifier.height(16.dp))
@@ -79,9 +97,11 @@ fun SearchPanel(
 }
 
 @Composable
-fun AccountPanel(vm: BrowseViewModel, onLoggedOut: () -> Unit) {
+fun SettingsPanel(vm: BrowseViewModel, onLoggedOut: () -> Unit) {
     LaunchedEffect(Unit) { vm.loadAccountInfo() }
     val account = vm.prefs.account
+    val activity = LocalActivity.current
+    val language = remember(activity) { activity?.let { AppLanguage.current(it) } }
 
     Column(
         Modifier
@@ -111,8 +131,24 @@ fun AccountPanel(vm: BrowseViewModel, onLoggedOut: () -> Unit) {
             }
         }
 
+        Section(stringResource(R.string.section_language))
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Chip(
+                stringResource(R.string.language_system),
+                selected = language == null,
+                onClick = { activity?.let { AppLanguage.set(it, null) } },
+            )
+            AppLanguage.tags.forEach { tag ->
+                Chip(
+                    AppLanguage.label(tag),
+                    selected = language == tag,
+                    onClick = { activity?.let { AppLanguage.set(it, tag) } },
+                )
+            }
+        }
+
         Section(stringResource(R.string.section_live_format))
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             LiveFormat.entries.forEach { f ->
                 Chip(f.label, selected = vm.liveFormat == f, onClick = { vm.updateLiveFormat(f) })
             }
@@ -133,7 +169,7 @@ fun AccountPanel(vm: BrowseViewModel, onLoggedOut: () -> Unit) {
                 focusedBorderColor = ZColors.Accent,
                 cursorColor = ZColors.Accent,
             ),
-            modifier = Modifier.width(560.dp),
+            modifier = Modifier.widthIn(max = 560.dp).fillMaxWidth(),
         )
         Text(
             stringResource(R.string.user_agent_help),
@@ -143,7 +179,7 @@ fun AccountPanel(vm: BrowseViewModel, onLoggedOut: () -> Unit) {
         )
 
         Section(stringResource(R.string.section_data))
-        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             ActionButton(stringResource(R.string.reload_lists), onClick = { vm.clearCache() })
             ActionButton(
                 stringResource(R.string.sign_out),
@@ -179,7 +215,7 @@ private fun Section(title: String) {
 @Composable
 private fun InfoLine(label: String, value: String) {
     Row(Modifier.fillMaxWidth().padding(vertical = 3.dp)) {
-        Text(label, color = ZColors.TextDim, fontSize = 15.sp, modifier = Modifier.width(140.dp))
+        Text(label, color = ZColors.TextDim, fontSize = 15.sp, modifier = Modifier.width(if (isCompact()) 110.dp else 140.dp))
         Text(value, color = ZColors.Text, fontSize = 15.sp)
     }
 }

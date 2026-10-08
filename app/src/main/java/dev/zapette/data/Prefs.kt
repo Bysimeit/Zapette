@@ -35,6 +35,10 @@ class Prefs(context: Context) {
         get() = sp.getString("user_agent", null)?.takeIf { it.isNotBlank() } ?: Http.DEFAULT_USER_AGENT
         set(value) = sp.edit().putString("user_agent", value).apply()
 
+    var language: String?
+        get() = sp.getString("language", null)
+        set(value) = sp.edit().putString("language", value).apply()
+
     fun favorites(kind: Kind): Set<String> =
         sp.getStringSet("fav_${kind.name}", null)?.toSet() ?: emptySet()
 
