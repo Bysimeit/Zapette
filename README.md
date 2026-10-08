@@ -1,108 +1,99 @@
 # Zapette
 
-A free, ad-free IPTV player for **Google TV / Android TV** and **Android phones and tablets**, built for the remote
+A free, ad-free IPTV player for **Google TV / Android TV** and **Android phones and tablets**, designed for the remote
 control, touch screens and 4K.
 
-Zapette does not ship any channels: it is a player. It connects to an **Xtream Codes** subscription
-(server address + username + password) that you already have.
+Zapette does not provide any channels: it is a player for the **Xtream Codes** subscription you already have
+(server address, username and password).
 
 Available in English, French, Dutch and German.
 
 ## Features
 
-- Xtream Codes sign-in with server address, username and password. Paste a full M3U link
-  (`get.php?username=…&password=…`) into the server field and the username and password are filled in automatically
-- **Live TV**, **Movies**, **Series**, **Search** and **Settings** tabs
-- Categories open as you move over them, like on a TV box
-- **Favorites**: hold OK (or long-press on a touch screen) on a channel, movie or series
-- Phone layout in portrait (bottom tab bar, scrolling category strip) and the TV layout in landscape
-- **Media3 / ExoPlayer** player:
-  - hardware decoding (4K HEVC, VP9, AV1 and HDR, depending on what the device supports), with automatic fallback to another decoder
-  - Live TV: ↑/↓ or CH+/CH- to zap (swipe up/down or the on-screen buttons on a phone), OK or a tap for the info banner with the TV guide (now / next) and technical details (resolution, codec, fps, HDR, audio)
-  - Movies and series: ←/→ to seek (faster when held), automatic resume where you left off, episodes play back to back
-  - audio track and subtitle selection from the player controls
-  - automatic reconnection when the stream drops
-- Live stream format of your choice: MPEG-TS (fast zapping) or HLS
-- Custom User-Agent (for providers that block unknown apps)
-- Nothing is sent anywhere but your IPTV server: credentials, favorites and resume positions stay on the device
-- Language picker in Settings (also available as the per-app language in Android 13+ system settings)
+- **Live TV, Movies and Series** from your Xtream Codes subscription, browsed by category
+- **Search** across channels, movies and series
+- **Favorites**: hold OK (or long-press on a touch screen) on any channel, movie or series
+- **TV guide** in the info banner (what's on now and next)
+- **Resume playback** where you left off, and episodes that play back to back
+- **4K and HDR** through the device's hardware decoders
+- **Surround audio**: AC-3, E-AC-3, DTS and TrueHD are sent to your soundbar or AV receiver when possible,
+  and decoded by the app otherwise
+- **Audio tracks and subtitles** selectable while watching
+- **Automatic reconnection** when a stream drops
+- **Phone and tablet layout**: tabs at the bottom in portrait, full-screen browsing in landscape, and swipe up or down
+  to change channel while watching live TV
+- **Fast start**: channel and movie lists are kept for 24 hours, so they open instantly
+- **Language** picker in Settings
+- **No ads, no tracking, no account**: your credentials, favorites and progress stay on your device
 
-## Building
+## Installation
 
-Requirements: a recent Android Studio (AGP 9.4, Gradle 9.6, JDK 17+).
+Zapette runs on Android 7.0 or later. Download the latest `Zapette-x.y.z.apk` from the [**Releases**](../../releases/latest)
+page.
 
-1. Open the `Zapette` folder in Android Studio.
-2. Let the Gradle sync finish.
-3. **Build › Build App Bundle(s) / APK(s) › Build APK(s)**, or from the command line:
+### On Google TV / Android TV
 
-   ```bash
-   ./gradlew assembleRelease
-   ```
-
-   The APK ends up in `app/build/outputs/apk/release/`. Without a configured keystore it is signed with the debug key,
-   which is enough to install it on your own devices.
-
-To sign with your own key (for example in a GitHub Action), set the `ZAPETTE_STORE_FILE`, `ZAPETTE_STORE_PASSWORD`,
-`ZAPETTE_KEY_ALIAS` and `ZAPETTE_KEY_PASSWORD` environment variables.
-
-Unit tests: `./gradlew test`.
-
-### Releases
-
-The [Build APK](.github/workflows/build.yml) workflow publishes a pre-release APK for every push to `main`, named after
-the upcoming version set in `app/build.gradle.kts` (for example `1.1.0-dev.12`).
-To publish a stable release, run it from the **Actions** tab (**Run workflow**) and pick a `major`, `minor` or `patch` bump
-from the latest release.
-
-Signing uses the `ZAPETTE_KEYSTORE_BASE64` (keystore encoded in base64), `ZAPETTE_STORE_PASSWORD`, `ZAPETTE_KEY_ALIAS`
-and `ZAPETTE_KEY_PASSWORD` repository secrets. Without them, each build gets a different debug key and cannot update a
-previous install.
-
-## Installing
-
-Download `Zapette-x.y.z.apk` from the [latest release](https://github.com/Bysimeit/Zapette/releases/latest).
-Zapette runs on Android 7.0 or later.
+1. Get the APK onto your TV, using whichever method suits you:
+   - **Downloader** (from the Play Store): enter the APK link and install it directly on the TV.
+   - **Send Files to TV** (on your phone and your TV): send the APK from your phone, then open it on the TV.
+   - **USB stick**: copy the APK to it, plug it into the TV and open it with a file manager.
+2. The first time, Android asks you to allow installing apps from that source: accept, then install.
 
 ### On an Android phone or tablet
 
-1. Open the release page on your phone and download the APK.
-2. Open the downloaded file and allow your browser (or file manager) to install unknown apps when Android asks.
-3. Zapette appears in your app drawer. Portrait and landscape are both supported.
+1. Open the [**Releases**](../../releases/latest) page on your phone and download the APK.
+2. Open the downloaded file. The first time, Android asks you to allow your browser (or file manager) to install apps:
+   accept, then install.
 
-### On Google TV
+### Updating
 
-1. On the TV: **Settings › System › About**, click **Android TV OS build** 7 times to enable developer options.
-2. **Settings › System › Developer options**: enable **USB debugging** and **Wireless debugging**.
-3. From your computer (same network):
+Download the new APK from [Releases](../../releases/latest) and install it over the current version.
+Your account, favorites and resume positions are kept.
 
-   ```bash
-   adb pair TV_IP:PAIRING_PORT     # enter the code shown on the TV
-   adb connect TV_IP:PORT
-   adb install -r app/build/outputs/apk/release/app-release.apk
-   ```
+## Getting started
 
-   Or simply press **Run ▶** in Android Studio once the TV is connected.
+Open Zapette and enter your **server address**, **username** and **password**. You can also paste a full M3U link
+(`…/get.php?username=…&password=…`) into the server address field: the three fields are filled in for you.
 
-No cable or adb? Send the APK to the TV with an app such as *Send Files to TV* or *Downloader*.
+> On a TV, typing with a remote is slow: the **Google TV app on your phone** lets you type (or paste) with your phone's
+> keyboard.
 
-## Project layout
+## Troubleshooting
 
-```
-app/src/main/java/dev/zapette/
-├── data/      Xtream API client (player_api.php), models, local settings, HTTP client
-├── player/    Full-screen player (Media3) and playback queue
-└── ui/        Compose screens: sign-in, browsing, series page, search, settings
-app/src/main/res/values*/strings.xml   Translations (en, fr, nl, de)
-```
+**A channel won't start or keeps stuttering**
+Go to **Settings › Live channel playback** and switch to **HLS**.
 
-Adding a language: copy `app/src/main/res/values/strings.xml` to `values-xx/strings.xml`, translate it, and add `xx` to
-`AppLanguage.tags` in `ui/AppLanguage.kt`.
+**The app says my credentials are wrong, or lists stay empty**
+Check the server address, including the port (often `:8080`). Some providers block unknown apps: in that case,
+set the User-Agent they recommend in **Settings › User-Agent**.
+
+**"The server is receiving too many requests (HTTP 429)"**
+Your provider limits how often the app can ask for lists. Wait a few seconds and try again.
+
+**A movie plays without sound**
+Open the player controls › ⚙ › **Audio** and pick another track.
+
+**4K is choppy**
+4K depends on what the device's hardware can decode. The info banner (OK or a tap during live TV) shows the resolution
+and codec of the current stream, which helps you see what is being played.
+
+**Lists look outdated**
+Lists refresh on their own every 24 hours. To refresh them right away, use **Settings › Reload lists**.
+
+## Privacy
+
+Zapette only talks to the IPTV server you sign in to. It has no analytics, no ads and no account of its own.
 
 ## Disclaimer
 
-Zapette is only a player. Use it exclusively with subscriptions and content you are legally entitled to access.
+Zapette is only a player and does not provide any content. Use it exclusively with subscriptions and content you are
+legally entitled to access.
 
 ## License
 
-Zapette is released under the [PolyForm Noncommercial License 1.0.0](LICENSE.md): you are free to use, study, modify and
-share it for any noncommercial purpose. Selling it, or using it in a paid product or service, is not allowed.
+Zapette is released under the [PolyForm Noncommercial License 1.0.0](LICENSE.md): you are free to use, study, modify
+and share it for any noncommercial purpose. Selling it, or using it in a paid product or service, is not allowed.
+
+Zapette uses [AndroidX Media3](https://github.com/androidx/media), [OkHttp](https://square.github.io/okhttp/),
+[Coil](https://coil-kt.github.io/coil/) and [Jellyfin's Media3 FFmpeg decoder](https://github.com/jellyfin/jellyfin-androidx-media),
+each under its own license.
