@@ -5,15 +5,15 @@
     <string name="tab_series">Series</string>
     <string name="tab_search">Zoeken</string>
     <string name="tab_settings">Instellingen</string>
-    <string name="login_subtitle">Koppel je Xtream Codes-abonnement.</string>
+    <string name="login_subtitle">Koppel je Xtream Codes-abonnement of een M3U-afspeellijst.</string>
     <string name="login_server">Serveradres</string>
     <string name="login_server_hint">http://voorbeeld.com:8080 of volledige M3U-link</string>
     <string name="login_username">Gebruikersnaam</string>
     <string name="login_password">Wachtwoord</string>
     <string name="login_button">Inloggen</string>
     <string name="login_connecting">Bezig met inloggen…</string>
-    <string name="login_missing_fields">Vul alle drie de velden in.</string>
-    <string name="login_tip_m3u">Tip: plak je volledige M3U-link (get.php?username=…&amp;password=…) in het serverveld, dan worden gebruikersnaam en wachtwoord automatisch ingevuld.</string>
+    <string name="login_missing_fields">Vul het serveradres in met gebruikersnaam en wachtwoord, of alleen een afspeellijstlink.</string>
+    <string name="login_tip_m3u">Tip: plak een volledige M3U-link in het serverveld. Bij een Xtream-link (get.php?username=…&amp;password=…) worden gebruikersnaam en wachtwoord automatisch ingevuld; bij een gewone afspeellijst (.m3u) laat je ze leeg.</string>
     <string name="login_tip_tv">Op Google TV kun je met de Google TV-app op je telefoon typen (of plakken) met het toetsenbord van je telefoon.</string>
     <string name="category_favorites">★  Favorieten</string>
     <string name="category_all">Alles</string>
@@ -28,6 +28,7 @@
     <string name="search_no_results">Geen resultaten.</string>
     <string name="section_subscription">Abonnement</string>
     <string name="label_server">Server</string>
+    <string name="label_playlist">Afspeellijst</string>
     <string name="label_user">Gebruiker</string>
     <string name="label_status">Status</string>
     <string name="label_expiration">Verloopt</string>
@@ -71,6 +72,7 @@
     <string name="error_connect">Verbinding geweigerd. Controleer het adres en de poort.</string>
     <string name="error_bad_response">Onleesbaar antwoord van de server.</string>
     <string name="error_not_xtream">Onverwacht antwoord: is dit wel een Xtream Codes-server?</string>
+    <string name="error_not_playlist">Deze link is geen M3U-afspeellijst. Vul voor een Xtream Codes-abonnement ook de gebruikersnaam en het wachtwoord in.</string>
     <string name="error_auth">Inloggegevens geweigerd door de server.</string>
     <string name="error_invalid_url">Ongeldig serveradres.</string>
     <string name="error_http_denied">Toegang geweigerd door de server (HTTP %1$d).</string>

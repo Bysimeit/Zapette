@@ -123,7 +123,7 @@ fun BrowseScreen(
             Text("Zapette", color = ZColors.Accent, fontSize = if (short) 20.sp else 24.sp, fontWeight = FontWeight.Bold)
             Spacer(Modifier.width(if (short) 16.dp else 28.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                Tab.entries.forEach { t ->
+                vm.tabs.forEach { t ->
                     Chip(
                         text = stringResource(t.label),
                         selected = vm.tab == t,
@@ -155,7 +155,7 @@ private fun BottomTabBar(vm: BrowseViewModel) {
             .background(ZColors.Surface)
             .padding(vertical = 4.dp),
     ) {
-        Tab.entries.forEach { t ->
+        vm.tabs.forEach { t ->
             val color = if (vm.tab == t) ZColors.Accent else ZColors.TextDim
             Column(
                 Modifier

@@ -61,8 +61,8 @@ fun SearchPanel(
         )
     }
     val kinds: @Composable () -> Unit = {
-        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            Kind.entries.forEach { k ->
+        if (vm.kinds.size > 1) Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            vm.kinds.forEach { k ->
                 Chip(stringResource(k.label), selected = vm.searchKind == k, onClick = { vm.updateSearchKind(k) })
             }
         }
@@ -110,13 +110,13 @@ fun SettingsPanel(vm: BrowseViewModel, onLoggedOut: () -> Unit) {
             .padding(horizontal = 8.dp),
     ) {
         Section(stringResource(R.string.section_subscription))
-        InfoLine(stringResource(R.string.label_server), account?.server ?: "-")
-        InfoLine(stringResource(R.string.label_user), account?.username ?: "-")
-        when (val info = vm.accountInfo) {
+        val isPlaylist = account?.isPlaylist == true
+        InfoLine(stringResource(if (isPlaylist) R.string.label_playlist else R.string.label_server), account?.server ?: "-")
+        if (!isPlaylist) InfoLine(stringResource(R.string.label_user), account?.username ?: "-")
+        if (!isPlaylist) when (val info = vm.accountInfo) {
             Load.Idle, Load.Loading -> InfoLine(stringResource(R.string.label_status), stringResource(R.string.status_loading))
             is Load.Err -> InfoLine(stringResource(R.string.label_status), info.message)
-            is Load.Ok -> {
-                val i = info.value
+            is Load.Ok -> info.value?.let { i ->
                 InfoLine(
                     stringResource(R.string.label_status),
                     if (i.isTrial) stringResource(R.string.status_trial, i.status) else i.status,
@@ -147,18 +147,20 @@ fun SettingsPanel(vm: BrowseViewModel, onLoggedOut: () -> Unit) {
             }
         }
 
-        Section(stringResource(R.string.section_live_format))
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            LiveFormat.entries.forEach { f ->
-                Chip(f.label, selected = vm.liveFormat == f, onClick = { vm.updateLiveFormat(f) })
+        if (!isPlaylist) {
+            Section(stringResource(R.string.section_live_format))
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                LiveFormat.entries.forEach { f ->
+                    Chip(f.label, selected = vm.liveFormat == f, onClick = { vm.updateLiveFormat(f) })
+                }
             }
+            Text(
+                stringResource(R.string.live_format_help),
+                color = ZColors.TextDim,
+                fontSize = 13.sp,
+                modifier = Modifier.padding(top = 8.dp),
+            )
         }
-        Text(
-            stringResource(R.string.live_format_help),
-            color = ZColors.TextDim,
-            fontSize = 13.sp,
-            modifier = Modifier.padding(top = 8.dp),
-        )
 
         Section(stringResource(R.string.section_user_agent))
         OutlinedTextField(

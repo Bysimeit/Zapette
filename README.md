@@ -4,13 +4,14 @@ A free, ad-free IPTV player for **Google TV / Android TV** and **Android phones 
 control, touch screens and 4K.
 
 Zapette does not provide any channels: it is a player for the **Xtream Codes** subscription you already have
-(server address, username and password).
+(server address, username and password) or for any **M3U playlist** link.
 
 Available in English, French, Dutch and German.
 
 ## Features
 
 - **Live TV, Movies and Series** from your Xtream Codes subscription, browsed by category
+- **M3U playlists** (such as [iptv-org](https://github.com/iptv-org/iptv)): live channels sorted by the playlist's groups
 - **Search** across channels, movies and series
 - **Favorites**: hold OK (or long-press on a touch screen) on any channel, movie or series
 - **TV guide** in the info banner (what's on now and next)
@@ -54,6 +55,9 @@ Your account, favorites and resume positions are kept.
 
 Open Zapette and enter your **server address**, **username** and **password**. You can also paste a full M3U link
 (`…/get.php?username=…&password=…`) into the server address field: the three fields are filled in for you.
+
+For a plain **M3U playlist** (for example `https://iptv-org.github.io/iptv/index.m3u`), paste its link into the server
+address field and leave the username and password empty.
 
 > On a TV, typing with a remote is slow: the **Google TV app on your phone** lets you type (or paste) with your phone's
 > keyboard.

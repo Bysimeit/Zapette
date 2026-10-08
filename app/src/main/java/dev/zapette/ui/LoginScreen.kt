@@ -63,7 +63,7 @@ fun LoginScreen(vm: BrowseViewModel, onLoggedIn: () -> Unit) {
 
     fun submit() {
         if (loading) return
-        if (server.isBlank() || username.isBlank() || password.isBlank()) {
+        if (server.isBlank() || username.isBlank() != password.isBlank()) {
             error = missingFields
             return
         }

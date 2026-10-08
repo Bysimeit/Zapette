@@ -2,25 +2,30 @@ package dev.zapette.data
 
 import android.util.Base64
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
-import okhttp3.Request
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.IOException
 
 class XtreamException(val reason: Reason, val httpCode: Int = 0) : IOException(reason.name) {
-    enum class Reason { NOT_XTREAM, AUTH_REJECTED, INVALID_URL, HTTP, BAD_RESPONSE }
+    enum class Reason { NOT_XTREAM, NOT_PLAYLIST, AUTH_REJECTED, INVALID_URL, HTTP, BAD_RESPONSE }
 }
 
-class XtreamApi(val account: Account, private val cache: CatalogCache? = null) {
+class XtreamApi(override val account: Account, private val cache: CatalogCache? = null) : Catalog {
 
     val base: String = normalizeServer(account.server)
 
-    suspend fun accountInfo(): AccountInfo = call(apiUrl(null)) { body ->
+    override val kinds = Kind.entries
+
+    override suspend fun verify(): Account {
+        accountInfo()
+        return account.copy(server = base)
+    }
+
+    override suspend fun accountInfo(): AccountInfo = call(apiUrl(null)) { body ->
         val json = JSONObject(body)
         val ui = json.optJSONObject("user_info")
             ?: throw XtreamException(XtreamException.Reason.NOT_XTREAM)
@@ -34,7 +39,7 @@ class XtreamApi(val account: Account, private val cache: CatalogCache? = null) {
         )
     }
 
-    suspend fun categories(kind: Kind): List<Category> {
+    override suspend fun categories(kind: Kind): List<Category> {
         val action = when (kind) {
             Kind.LIVE -> "get_live_categories"
             Kind.MOVIE -> "get_vod_categories"
@@ -48,7 +53,7 @@ class XtreamApi(val account: Account, private val cache: CatalogCache? = null) {
         }
     }
 
-    suspend fun streams(kind: Kind, categoryId: String?): List<Entry> {
+    override suspend fun streams(kind: Kind, categoryId: String?): List<Entry> {
         val action = when (kind) {
             Kind.LIVE -> "get_live_streams"
             Kind.MOVIE -> "get_vod_streams"
@@ -60,7 +65,7 @@ class XtreamApi(val account: Account, private val cache: CatalogCache? = null) {
         }
     }
 
-    suspend fun seriesInfo(seriesId: Int): SeriesDetail =
+    override suspend fun seriesInfo(seriesId: Int): SeriesDetail =
         call(apiUrl("get_series_info", "series_id" to seriesId.toString()), cached = true) { body ->
             val o = JSONObject(body)
             val info = o.optJSONObject("info") ?: JSONObject()
@@ -108,7 +113,7 @@ class XtreamApi(val account: Account, private val cache: CatalogCache? = null) {
             )
         }
 
-    suspend fun shortEpg(streamId: Int, limit: Int = 3): List<EpgItem> =
+    override suspend fun shortEpg(streamId: Int, limit: Int): List<EpgItem> =
         call(apiUrl("get_short_epg", "stream_id" to streamId.toString(), "limit" to limit.toString())) { body ->
             val arr = JSONObject(body).optJSONArray("epg_listings") ?: return@call emptyList()
             (0 until arr.length()).mapNotNull { arr.optJSONObject(it) }.map { e ->
@@ -120,11 +125,11 @@ class XtreamApi(val account: Account, private val cache: CatalogCache? = null) {
             }
         }
 
-    fun liveUrl(streamId: Int, format: LiveFormat): String = streamUrl("live", "$streamId.${format.ext}")
+    override fun liveUrl(entry: Entry, format: LiveFormat): String = streamUrl("live", "${entry.id}.${format.ext}")
 
-    fun movieUrl(streamId: Int, ext: String): String = streamUrl("movie", "$streamId.$ext")
+    override fun movieUrl(entry: Entry): String = streamUrl("movie", "${entry.id}.${entry.ext ?: "mp4"}")
 
-    fun episodeUrl(episodeId: String, ext: String): String = streamUrl("series", "$episodeId.$ext")
+    override fun episodeUrl(episode: Episode): String = streamUrl("series", "${episode.id}.${episode.ext}")
 
     private fun streamUrl(type: String, file: String): String =
         base.toHttpUrl().newBuilder()
@@ -156,24 +161,8 @@ class XtreamApi(val account: Account, private val cache: CatalogCache? = null) {
         store?.read(key)?.let { body ->
             runCatching { parse(body) }.onSuccess { return@withContext it }
         }
-        val body = fetch(url)
+        val body = Http.fetch(url)
         parse(body).also { runCatching { store?.write(key, body) } }
-    }
-
-    private suspend fun fetch(url: HttpUrl): String {
-        var attempt = 0
-        while (true) {
-            val waitSeconds = Http.client.newCall(Request.Builder().url(url).build()).execute().use { response ->
-                when {
-                    response.isSuccessful -> return response.body?.string().orEmpty()
-                    response.code == 429 && attempt < RATE_LIMIT_RETRIES ->
-                        response.header("Retry-After")?.toLongOrNull()?.coerceIn(1, 10) ?: (3L shl attempt)
-                    else -> throw XtreamException(XtreamException.Reason.HTTP, response.code)
-                }
-            }
-            attempt++
-            delay(waitSeconds * 1000)
-        }
     }
 
     private fun parseEntry(kind: Kind, o: JSONObject): Entry? = when (kind) {
@@ -213,8 +202,6 @@ class XtreamApi(val account: Account, private val cache: CatalogCache? = null) {
             .getOrDefault(s)
 
     companion object {
-        private const val RATE_LIMIT_RETRIES = 2
-
         fun normalizeServer(raw: String): String {
             var s = raw.trim()
             if (!s.startsWith("http://", ignoreCase = true) && !s.startsWith("https://", ignoreCase = true)) {

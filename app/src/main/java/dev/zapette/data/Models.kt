@@ -13,7 +13,9 @@ data class Account(
     val server: String,
     val username: String,
     val password: String,
-)
+) {
+    val isPlaylist: Boolean get() = username.isBlank() && password.isBlank()
+}
 
 enum class LiveFormat(val ext: String, val label: String) {
     TS("ts", "MPEG-TS (.ts)"),
@@ -35,6 +37,8 @@ data class Entry(
     val ext: String? = null,
     val rating: String? = null,
     val plot: String? = null,
+    val url: String? = null,
+    val userAgent: String? = null,
 )
 
 data class Episode(
