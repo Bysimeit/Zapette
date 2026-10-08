@@ -163,15 +163,16 @@ fun SeriesScreen(vm: BrowseViewModel, series: Entry, onPlay: () -> Unit) {
         return
     }
 
+    val short = isShort()
     Row(
         Modifier
             .fillMaxSize()
             .background(ZColors.Bg)
-            .padding(horizontal = 40.dp, vertical = 28.dp),
+            .padding(horizontal = if (short) 16.dp else 40.dp, vertical = if (short) 10.dp else 28.dp),
     ) {
         Column(
             Modifier
-                .width(if (isShort()) 170.dp else 250.dp)
+                .width(if (short) 170.dp else 250.dp)
                 .fillMaxHeight()
                 .verticalScroll(rememberScrollState()),
         ) {
@@ -179,7 +180,7 @@ fun SeriesScreen(vm: BrowseViewModel, series: Entry, onPlay: () -> Unit) {
             Spacer(Modifier.height(14.dp))
             info(7)
         }
-        Spacer(Modifier.width(32.dp))
+        Spacer(Modifier.width(if (short) 20.dp else 32.dp))
         episodesArea(Modifier.weight(1f).fillMaxHeight())
     }
 }

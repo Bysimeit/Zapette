@@ -112,15 +112,16 @@ fun BrowseScreen(
         return
     }
 
+    val short = isShort()
     Column(
         Modifier
             .fillMaxSize()
             .background(ZColors.Bg)
-            .padding(horizontal = 36.dp, vertical = 20.dp),
+            .padding(horizontal = if (short) 16.dp else 36.dp, vertical = if (short) 8.dp else 20.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text("Zapette", color = ZColors.Accent, fontSize = 24.sp, fontWeight = FontWeight.Bold)
-            Spacer(Modifier.width(28.dp))
+            Text("Zapette", color = ZColors.Accent, fontSize = if (short) 20.sp else 24.sp, fontWeight = FontWeight.Bold)
+            Spacer(Modifier.width(if (short) 16.dp else 28.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 Tab.entries.forEach { t ->
                     Chip(
@@ -132,7 +133,7 @@ fun BrowseScreen(
                 }
             }
         }
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(if (short) 8.dp else 16.dp))
         content()
     }
 }
@@ -237,8 +238,9 @@ private fun KindPanel(
         return
     }
 
+    val short = isShort()
     Row(Modifier.fillMaxSize()) {
-        Box(Modifier.width(260.dp).fillMaxHeight()) {
+        Box(Modifier.width(if (short) 200.dp else 260.dp).fillMaxHeight()) {
             when (val cats = st.categories) {
                 Load.Idle, Load.Loading -> LoadingBox()
                 is Load.Err -> MessageBox(cats.message, isError = true, onRetry = { vm.retryCategories(kind) })
@@ -252,8 +254,8 @@ private fun KindPanel(
                     }
                     LazyColumn(
                         modifier = Modifier.fillMaxSize().focusRestorer(),
-                        contentPadding = PaddingValues(vertical = 8.dp, horizontal = 8.dp),
-                        verticalArrangement = Arrangement.spacedBy(4.dp),
+                        contentPadding = PaddingValues(vertical = if (short) 4.dp else 8.dp, horizontal = if (short) 0.dp else 8.dp),
+                        verticalArrangement = Arrangement.spacedBy(if (short) 0.dp else 4.dp),
                     ) {
                         items(all, key = { it.id }) { cat ->
                             CategoryRow(
@@ -267,7 +269,7 @@ private fun KindPanel(
                 }
             }
         }
-        Spacer(Modifier.width(12.dp))
+        Spacer(Modifier.width(if (short) 8.dp else 12.dp))
         itemsArea(Modifier.weight(1f).fillMaxHeight())
     }
 }
