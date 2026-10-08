@@ -4,6 +4,7 @@ import android.app.Application
 import android.content.Context
 import androidx.annotation.StringRes
 import dev.zapette.R
+import dev.zapette.data.Catalog
 import dev.zapette.data.XtreamException
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -22,7 +23,6 @@ import dev.zapette.data.Kind
 import dev.zapette.data.LiveFormat
 import dev.zapette.data.Prefs
 import dev.zapette.data.SeriesDetail
-import dev.zapette.data.XtreamApi
 import dev.zapette.player.PlayItem
 import dev.zapette.player.PlaybackQueue
 import kotlinx.coroutines.CancellationException
@@ -33,6 +33,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import org.json.JSONException
 import java.net.ConnectException
 import java.net.SocketTimeoutException
@@ -76,13 +77,16 @@ class BrowseViewModel(app: Application) : AndroidViewModel(app) {
 
     private val catalogCache = CatalogCache(File(app.cacheDir, "catalog"))
 
-    var api by mutableStateOf(prefs.account?.let { XtreamApi(it, catalogCache) })
+    var api by mutableStateOf(prefs.account?.let { Catalog.create(it, catalogCache) })
         private set
 
     var tab by mutableStateOf(Tab.LIVE)
 
     private val states = Kind.entries.associateWith { KindState() }
     fun state(kind: Kind): KindState = states.getValue(kind)
+
+    val kinds: List<Kind> get() = api?.kinds ?: Kind.entries
+    val tabs: List<Tab> get() = Tab.entries.filter { it.kind == null || it.kind in kinds }
 
     private val streamCache = HashMap<String, List<Entry>>()
     private val allCache = HashMap<Kind, List<Entry>>()
@@ -98,7 +102,7 @@ class BrowseViewModel(app: Application) : AndroidViewModel(app) {
         private set
     private var seriesJob: Job? = null
 
-    var accountInfo by mutableStateOf<Load<AccountInfo>>(Load.Idle)
+    var accountInfo by mutableStateOf<Load<AccountInfo?>>(Load.Idle)
         private set
 
     var searchQuery by mutableStateOf("")
@@ -128,12 +132,11 @@ class BrowseViewModel(app: Application) : AndroidViewModel(app) {
 
     suspend fun login(account: Account): Result<Unit> {
         return try {
-            val candidate = XtreamApi(account)
-            candidate.accountInfo()
-            val saved = account.copy(server = candidate.base)
-            prefs.account = saved
             resetData()
-            api = XtreamApi(saved, catalogCache)
+            val candidate = Catalog.create(account, catalogCache)
+            val saved = candidate.verify()
+            prefs.account = saved
+            api = if (saved == account) candidate else Catalog.create(saved, catalogCache)
             Result.success(Unit)
         } catch (e: CancellationException) {
             throw e
@@ -293,11 +296,15 @@ class BrowseViewModel(app: Application) : AndroidViewModel(app) {
     fun playLive(list: List<Entry>, index: Int) {
         val api = api ?: return
         val format = liveFormat
+        Http.hostUserAgents = list.mapNotNull { e ->
+            val ua = e.userAgent ?: return@mapNotNull null
+            e.url?.toHttpUrlOrNull()?.host?.let { it to ua }
+        }.toMap()
         PlaybackQueue.set(
             list.map {
                 PlayItem(
                     title = if (it.num > 0) "${it.num}  ${it.name}" else it.name,
-                    url = api.liveUrl(it.id, format),
+                    url = api.liveUrl(it, format),
                     isLive = true,
                     streamId = it.id,
                 )
@@ -312,7 +319,7 @@ class BrowseViewModel(app: Application) : AndroidViewModel(app) {
             listOf(
                 PlayItem(
                     title = entry.name,
-                    url = api.movieUrl(entry.id, entry.ext ?: "mp4"),
+                    url = api.movieUrl(entry),
                     isLive = false,
                     streamId = entry.id,
                     resumeKey = movieKey(entry.id),
@@ -328,7 +335,7 @@ class BrowseViewModel(app: Application) : AndroidViewModel(app) {
             episodes.map { ep ->
                 PlayItem(
                     title = "S${ep.season} E${ep.number} · ${ep.title}",
-                    url = api.episodeUrl(ep.id, ep.ext),
+                    url = api.episodeUrl(ep),
                     isLive = false,
                     resumeKey = episodeKey(ep.id),
                 )
@@ -362,6 +369,7 @@ class BrowseViewModel(app: Application) : AndroidViewModel(app) {
 fun Throwable.userMessage(context: Context): String = when (this) {
     is XtreamException -> when (reason) {
         XtreamException.Reason.NOT_XTREAM -> context.getString(R.string.error_not_xtream)
+        XtreamException.Reason.NOT_PLAYLIST -> context.getString(R.string.error_not_playlist)
         XtreamException.Reason.AUTH_REJECTED -> context.getString(R.string.error_auth)
         XtreamException.Reason.INVALID_URL -> context.getString(R.string.error_invalid_url)
         XtreamException.Reason.BAD_RESPONSE -> context.getString(R.string.error_bad_response)

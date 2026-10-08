@@ -5,15 +5,15 @@
     <string name="tab_series">Serien</string>
     <string name="tab_search">Suche</string>
     <string name="tab_settings">Einstellungen</string>
-    <string name="login_subtitle">Verbinde dein Xtream-Codes-Abo.</string>
+    <string name="login_subtitle">Verbinde dein Xtream-Codes-Abo oder eine M3U-Playlist.</string>
     <string name="login_server">Serveradresse</string>
     <string name="login_server_hint">http://beispiel.de:8080 oder vollständiger M3U-Link</string>
     <string name="login_username">Benutzername</string>
     <string name="login_password">Passwort</string>
     <string name="login_button">Anmelden</string>
     <string name="login_connecting">Anmeldung…</string>
-    <string name="login_missing_fields">Bitte fülle alle drei Felder aus.</string>
-    <string name="login_tip_m3u">Tipp: Füge deinen vollständigen M3U-Link (get.php?username=…&amp;password=…) in das Serverfeld ein, dann werden Benutzername und Passwort automatisch ausgefüllt.</string>
+    <string name="login_missing_fields">Gib die Serveradresse mit Benutzername und Passwort ein, oder nur einen Playlist-Link.</string>
+    <string name="login_tip_m3u">Tipp: Füge einen vollständigen M3U-Link in das Serverfeld ein. Bei einem Xtream-Link (get.php?username=…&amp;password=…) werden Benutzername und Passwort automatisch ausgefüllt; bei einer einfachen Playlist (.m3u) lässt du sie leer.</string>
     <string name="login_tip_tv">Auf Google TV kannst du mit der Google-TV-App auf deinem Handy über die Handytastatur tippen (oder einfügen).</string>
     <string name="category_favorites">★  Favoriten</string>
     <string name="category_all">Alle</string>
@@ -28,6 +28,7 @@
     <string name="search_no_results">Keine Ergebnisse.</string>
     <string name="section_subscription">Abo</string>
     <string name="label_server">Server</string>
+    <string name="label_playlist">Playlist</string>
     <string name="label_user">Benutzer</string>
     <string name="label_status">Status</string>
     <string name="label_expiration">Läuft ab</string>
@@ -71,6 +72,7 @@
     <string name="error_connect">Verbindung abgelehnt. Prüfe Adresse und Port.</string>
     <string name="error_bad_response">Unlesbare Antwort vom Server.</string>
     <string name="error_not_xtream">Unerwartete Antwort: Ist das wirklich ein Xtream-Codes-Server?</string>
+    <string name="error_not_playlist">Dieser Link ist keine M3U-Playlist. Für ein Xtream-Codes-Abo fülle auch Benutzername und Passwort aus.</string>
     <string name="error_auth">Zugangsdaten vom Server abgelehnt.</string>
     <string name="error_invalid_url">Ungültige Serveradresse.</string>
     <string name="error_http_denied">Zugriff vom Server verweigert (HTTP %1$d).</string>

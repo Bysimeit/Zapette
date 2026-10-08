@@ -35,10 +35,10 @@ import androidx.media3.extractor.DefaultExtractorsFactory
 import androidx.media3.extractor.ts.DefaultTsPayloadReaderFactory
 import androidx.media3.ui.PlayerView
 import dev.zapette.R
+import dev.zapette.data.Catalog
 import dev.zapette.data.EpgItem
 import dev.zapette.data.Http
 import dev.zapette.data.Prefs
-import dev.zapette.data.XtreamApi
 import dev.zapette.ui.AppLanguage
 import dev.zapette.ui.isTv
 import kotlin.math.abs
@@ -60,7 +60,7 @@ class PlayerActivity : ComponentActivity() {
     private lateinit var statusText: TextView
     private lateinit var prefs: Prefs
 
-    private var api: XtreamApi? = null
+    private var api: Catalog? = null
     private var items: List<PlayItem> = emptyList()
     private val isLive get() = items.firstOrNull()?.isLive == true
 
@@ -100,7 +100,7 @@ class PlayerActivity : ComponentActivity() {
 
         prefs = Prefs(this)
         Http.userAgent = prefs.userAgent
-        api = prefs.account?.let { XtreamApi(it) }
+        api = prefs.account?.let { Catalog.create(it) }
 
         playerView = findViewById(R.id.player_view)
         overlay = findViewById(R.id.live_overlay)
