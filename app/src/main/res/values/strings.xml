@@ -48,8 +48,13 @@
     <string name="sign_out">Sign out</string>
     <string name="about">Zapette %1$s · free, ad-free IPTV player. The app does not provide any content.</string>
     <string name="series_no_episodes">No episodes available for this series.</string>
+    <string name="back">Back</string>
     <string name="season_n">Season %1$d</string>
     <string name="resume_at">▶ Resume at %1$s</string>
+    <string name="play">▶ Play</string>
+    <string name="restart">↺ Start over</string>
+    <string name="movie_director">Director: %1$s</string>
+    <string name="movie_cast">Cast: %1$s</string>
     <string name="player_epg_loading">Loading TV guide…</string>
     <string name="player_prev_channel">▼  Previous channel</string>
     <string name="player_next_channel">Next channel  ▲</string>

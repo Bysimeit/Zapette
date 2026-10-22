@@ -4,6 +4,8 @@ import kotlinx.coroutines.delay
 import okhttp3.HttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okhttp3.Response
+import java.io.File
 import java.util.concurrent.TimeUnit
 
 object Http {
@@ -34,12 +36,18 @@ object Http {
             .build()
     }
 
-    suspend fun fetch(url: HttpUrl): String {
+    suspend fun fetch(url: HttpUrl): String = request(url) { it.body?.string().orEmpty() }
+
+    suspend fun download(url: HttpUrl, target: File) = request(url) { response ->
+        target.outputStream().use { out -> response.body?.byteStream()?.copyTo(out) }
+    }
+
+    private suspend fun <T> request(url: HttpUrl, onSuccess: (Response) -> T): T {
         var attempt = 0
         while (true) {
             val waitSeconds = client.newCall(Request.Builder().url(url).build()).execute().use { response ->
                 when {
-                    response.isSuccessful -> return response.body?.string().orEmpty()
+                    response.isSuccessful -> return onSuccess(response)
                     response.code == 429 && attempt < RATE_LIMIT_RETRIES ->
                         response.header("Retry-After")?.toLongOrNull()?.coerceIn(1, 10) ?: (3L shl attempt)
                     else -> throw XtreamException(XtreamException.Reason.HTTP, response.code)

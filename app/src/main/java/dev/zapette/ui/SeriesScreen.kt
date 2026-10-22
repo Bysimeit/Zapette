@@ -50,7 +50,7 @@ import java.util.Locale
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun SeriesScreen(vm: BrowseViewModel, series: Entry, onPlay: () -> Unit) {
+fun SeriesScreen(vm: BrowseViewModel, series: Entry, onPlay: () -> Unit, onBack: () -> Unit) {
     LaunchedEffect(series.id) { vm.loadSeries(series) }
     val isTv = LocalIsTv.current
     val episodesFocus = remember { FocusRequester() }
@@ -152,6 +152,7 @@ fun SeriesScreen(vm: BrowseViewModel, series: Entry, onPlay: () -> Unit) {
                 .background(ZColors.Bg)
                 .padding(12.dp),
         ) {
+            PhoneBackButton(onBack)
             Row {
                 poster(Modifier.width(100.dp))
                 Spacer(Modifier.width(14.dp))
@@ -176,6 +177,7 @@ fun SeriesScreen(vm: BrowseViewModel, series: Entry, onPlay: () -> Unit) {
                 .fillMaxHeight()
                 .verticalScroll(rememberScrollState()),
         ) {
+            PhoneBackButton(onBack)
             poster(Modifier.fillMaxWidth())
             Spacer(Modifier.height(14.dp))
             info(7)
@@ -250,7 +252,7 @@ private fun EpisodeRow(ep: Episode, resumeMs: Long, onClick: () -> Unit) {
     }
 }
 
-private fun formatShort(ms: Long): String {
+fun formatShort(ms: Long): String {
     val total = ms / 1000
     val h = total / 3600
     val m = (total % 3600) / 60

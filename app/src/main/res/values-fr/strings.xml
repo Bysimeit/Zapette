@@ -47,8 +47,13 @@
     <string name="sign_out">Se déconnecter</string>
     <string name="about">Zapette %1$s · lecteur IPTV libre, sans publicité. Aucun contenu n\'est fourni par l\'application.</string>
     <string name="series_no_episodes">Aucun épisode disponible pour cette série.</string>
+    <string name="back">Retour</string>
     <string name="season_n">Saison %1$d</string>
     <string name="resume_at">▶ Reprendre à %1$s</string>
+    <string name="play">▶ Lecture</string>
+    <string name="restart">↺ Reprendre depuis le début</string>
+    <string name="movie_director">Réalisation : %1$s</string>
+    <string name="movie_cast">Avec : %1$s</string>
     <string name="player_epg_loading">Guide des programmes…</string>
     <string name="player_prev_channel">▼  Chaîne précédente</string>
     <string name="player_next_channel">Chaîne suivante  ▲</string>

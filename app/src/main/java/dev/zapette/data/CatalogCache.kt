@@ -24,6 +24,22 @@ class CatalogCache(
     }
 
     @Synchronized
+    fun file(key: String): File? {
+        if (createdAt() == null || isExpired()) return null
+        return fileFor(key).takeIf { it.isFile }
+    }
+
+    @Synchronized
+    fun adopt(key: String, file: File) {
+        if (isExpired()) clear()
+        dir.mkdirs()
+        if (createdAt() == null) marker.writeText(now().toString())
+        val target = fileFor(key)
+        target.delete()
+        if (!file.renameTo(target)) file.copyTo(target, overwrite = true)
+    }
+
+    @Synchronized
     fun write(key: String, body: String) {
         if (isExpired()) clear()
         dir.mkdirs()

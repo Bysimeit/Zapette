@@ -16,6 +16,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -165,6 +167,14 @@ fun ActionButton(
             fontSize = 16.sp,
             fontWeight = FontWeight.Bold,
         )
+    }
+}
+
+@Composable
+fun PhoneBackButton(onBack: () -> Unit) {
+    if (LocalIsTv.current) return
+    IconButton(onClick = onBack, modifier = Modifier.padding(bottom = 8.dp)) {
+        Icon(ZIcons.Back, contentDescription = stringResource(R.string.back), tint = ZColors.Text)
     }
 }
 

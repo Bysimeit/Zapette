@@ -1,6 +1,8 @@
 package dev.zapette.data
 
 import android.util.Base64
+import android.util.JsonReader
+import android.util.JsonToken
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.HttpUrl
@@ -8,7 +10,10 @@ import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import org.json.JSONArray
 import org.json.JSONObject
+import java.io.EOFException
+import java.io.File
 import java.io.IOException
+import java.io.Reader
 
 class XtreamException(val reason: Reason, val httpCode: Int = 0) : IOException(reason.name) {
     enum class Reason { NOT_XTREAM, NOT_PLAYLIST, AUTH_REJECTED, INVALID_URL, HTTP, BAD_RESPONSE }
@@ -60,9 +65,7 @@ class XtreamApi(override val account: Account, private val cache: CatalogCache? 
             Kind.SERIES -> "get_series"
         }
         val params = if (categoryId != null) arrayOf("category_id" to categoryId) else emptyArray()
-        return call(apiUrl(action, *params), cached = true) { body ->
-            jsonList(body).mapNotNull { parseEntry(kind, it) }
-        }
+        return callStreamed(apiUrl(action, *params)) { readEntries(kind, it) }
     }
 
     override suspend fun seriesInfo(seriesId: Int): SeriesDetail =
@@ -125,6 +128,9 @@ class XtreamApi(override val account: Account, private val cache: CatalogCache? 
             }
         }
 
+    override suspend fun movieInfo(movieId: Int): MovieDetail =
+        call(apiUrl("get_vod_info", "vod_id" to movieId.toString()), cached = true) { parseMovieDetail(it) }
+
     override fun liveUrl(entry: Entry, format: LiveFormat): String = streamUrl("live", "${entry.id}.${format.ext}")
 
     override fun movieUrl(entry: Entry): String = streamUrl("movie", "${entry.id}.${entry.ext ?: "mp4"}")
@@ -165,35 +171,104 @@ class XtreamApi(override val account: Account, private val cache: CatalogCache? 
         parse(body).also { runCatching { store?.write(key, body) } }
     }
 
-    private fun parseEntry(kind: Kind, o: JSONObject): Entry? = when (kind) {
-        Kind.LIVE -> o.optInt("stream_id", -1).takeIf { it >= 0 }?.let { id ->
-            Entry(
-                kind = kind, id = id,
-                name = o.str("name") ?: "#$id",
-                image = o.str("stream_icon"),
-                categoryId = o.str("category_id"),
-                num = o.optInt("num", 0),
-            )
+    private suspend fun <T> callStreamed(url: HttpUrl, parse: (Reader) -> T): T = withContext(Dispatchers.IO) {
+        val key = url.toString()
+        cache?.file(key)?.let { file ->
+            runCatching { file.bufferedReader().use(parse) }.onSuccess { return@withContext it }
         }
-        Kind.MOVIE -> o.optInt("stream_id", -1).takeIf { it >= 0 }?.let { id ->
-            Entry(
-                kind = kind, id = id,
-                name = o.str("name") ?: "#$id",
-                image = o.str("stream_icon"),
-                categoryId = o.str("category_id"),
-                ext = o.str("container_extension") ?: "mp4",
-                rating = o.str("rating"),
-            )
+        val tmp = File.createTempFile("catalog", ".json")
+        try {
+            Http.download(url, tmp)
+            tmp.bufferedReader().use(parse).also { runCatching { cache?.adopt(key, tmp) } }
+        } finally {
+            tmp.delete()
         }
-        Kind.SERIES -> o.optInt("series_id", -1).takeIf { it >= 0 }?.let { id ->
-            Entry(
-                kind = kind, id = id,
-                name = o.str("name") ?: "#$id",
-                image = o.str("cover"),
-                categoryId = o.str("category_id"),
-                rating = o.str("rating"),
-                plot = o.str("plot"),
-            )
+    }
+
+    private fun readEntries(kind: Kind, source: Reader): List<Entry> {
+        val reader = JsonReader(source).apply { isLenient = true }
+        val entries = ArrayList<Entry>()
+        try {
+            when (reader.peek()) {
+                JsonToken.BEGIN_ARRAY -> {
+                    reader.beginArray()
+                    while (reader.hasNext()) readEntry(kind, reader)?.let(entries::add)
+                    reader.endArray()
+                }
+                JsonToken.BEGIN_OBJECT -> {
+                    reader.beginObject()
+                    while (reader.hasNext()) {
+                        reader.nextName()
+                        readEntry(kind, reader)?.let(entries::add)
+                    }
+                    reader.endObject()
+                }
+                JsonToken.NULL, JsonToken.END_DOCUMENT -> Unit
+                else -> throw XtreamException(XtreamException.Reason.BAD_RESPONSE)
+            }
+        } catch (e: EOFException) {
+            if (entries.isNotEmpty()) throw XtreamException(XtreamException.Reason.BAD_RESPONSE)
+        } catch (e: XtreamException) {
+            throw e
+        } catch (e: IOException) {
+            throw XtreamException(XtreamException.Reason.BAD_RESPONSE)
+        } catch (e: IllegalStateException) {
+            throw XtreamException(XtreamException.Reason.BAD_RESPONSE)
+        }
+        return entries
+    }
+
+    private fun readEntry(kind: Kind, reader: JsonReader): Entry? {
+        if (reader.peek() != JsonToken.BEGIN_OBJECT) {
+            reader.skipValue()
+            return null
+        }
+        val fields = HashMap<String, String>()
+        reader.beginObject()
+        while (reader.hasNext()) {
+            val name = reader.nextName()
+            if (name in ENTRY_FIELDS && reader.peek().let { it == JsonToken.STRING || it == JsonToken.NUMBER }) {
+                fields[name] = reader.nextString()
+            } else {
+                reader.skipValue()
+            }
+        }
+        reader.endObject()
+        return parseEntry(kind) { key -> fields[key]?.trim()?.takeIf { it.isNotEmpty() && it != "null" } }
+    }
+
+    private fun parseEntry(kind: Kind, str: (String) -> String?): Entry? {
+        fun int(key: String) = str(key)?.let { it.toIntOrNull() ?: it.toDoubleOrNull()?.toInt() }
+        return when (kind) {
+            Kind.LIVE -> int("stream_id")?.takeIf { it >= 0 }?.let { id ->
+                Entry(
+                    kind = kind, id = id,
+                    name = str("name") ?: "#$id",
+                    image = str("stream_icon"),
+                    categoryId = str("category_id"),
+                    num = int("num") ?: 0,
+                )
+            }
+            Kind.MOVIE -> int("stream_id")?.takeIf { it >= 0 }?.let { id ->
+                Entry(
+                    kind = kind, id = id,
+                    name = str("name") ?: "#$id",
+                    image = str("stream_icon"),
+                    categoryId = str("category_id"),
+                    ext = str("container_extension") ?: "mp4",
+                    rating = str("rating"),
+                )
+            }
+            Kind.SERIES -> int("series_id")?.takeIf { it >= 0 }?.let { id ->
+                Entry(
+                    kind = kind, id = id,
+                    name = str("name") ?: "#$id",
+                    image = str("cover"),
+                    categoryId = str("category_id"),
+                    rating = str("rating"),
+                    plot = str("plot"),
+                )
+            }
         }
     }
 
@@ -202,6 +277,11 @@ class XtreamApi(override val account: Account, private val cache: CatalogCache? 
             .getOrDefault(s)
 
     companion object {
+        private val ENTRY_FIELDS = setOf(
+            "stream_id", "series_id", "name", "stream_icon", "cover", "category_id",
+            "num", "container_extension", "rating", "plot",
+        )
+
         fun normalizeServer(raw: String): String {
             var s = raw.trim()
             if (!s.startsWith("http://", ignoreCase = true) && !s.startsWith("https://", ignoreCase = true)) {
@@ -221,6 +301,28 @@ class XtreamApi(override val account: Account, private val cache: CatalogCache? 
             val user = url.queryParameter("username")?.takeIf { it.isNotBlank() } ?: return null
             val pass = url.queryParameter("password")?.takeIf { it.isNotBlank() } ?: return null
             return Account(normalizeServer(raw), user, pass)
+        }
+
+        internal fun parseMovieDetail(body: String): MovieDetail {
+            val info = JSONObject(body).optJSONObject("info") ?: JSONObject()
+            return MovieDetail(
+                plot = info.str("plot") ?: info.str("description"),
+                cover = info.str("movie_image") ?: info.str("cover_big"),
+                genre = info.str("genre"),
+                releaseDate = info.str("releasedate") ?: info.str("release_date"),
+                minutes = runtimeMinutes(info),
+                director = info.str("director"),
+                cast = info.str("cast") ?: info.str("actors"),
+            )
+        }
+
+        private fun runtimeMinutes(info: JSONObject): Int? {
+            info.str("duration_secs")?.toIntOrNull()?.takeIf { it > 0 }?.let { return (it + 30) / 60 }
+            info.str("duration")?.let { d ->
+                val parts = d.split(':').map { it.trim().toIntOrNull() ?: return@let }
+                if (parts.size == 3) return (parts[0] * 60 + parts[1]).takeIf { it > 0 }
+            }
+            return (info.str("episode_run_time") ?: info.str("runtime"))?.toIntOrNull()?.takeIf { it > 0 }
         }
 
         internal fun jsonList(body: String): List<JSONObject> {

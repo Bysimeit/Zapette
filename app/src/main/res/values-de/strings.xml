@@ -47,8 +47,13 @@
     <string name="sign_out">Abmelden</string>
     <string name="about">Zapette %1$s · freier IPTV-Player ohne Werbung. Die App stellt keine Inhalte bereit.</string>
     <string name="series_no_episodes">Für diese Serie sind keine Folgen verfügbar.</string>
+    <string name="back">Zurück</string>
     <string name="season_n">Staffel %1$d</string>
     <string name="resume_at">▶ Fortsetzen bei %1$s</string>
+    <string name="play">▶ Abspielen</string>
+    <string name="restart">↺ Von vorne beginnen</string>
+    <string name="movie_director">Regie: %1$s</string>
+    <string name="movie_cast">Besetzung: %1$s</string>
     <string name="player_epg_loading">TV-Programm wird geladen…</string>
     <string name="player_prev_channel">▼  Vorheriger Sender</string>
     <string name="player_next_channel">Nächster Sender  ▲</string>

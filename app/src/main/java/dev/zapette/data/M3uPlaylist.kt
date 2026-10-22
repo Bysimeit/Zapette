@@ -39,6 +39,9 @@ class M3uPlaylist(override val account: Account, private val cache: CatalogCache
     override suspend fun seriesInfo(seriesId: Int): SeriesDetail =
         throw XtreamException(XtreamException.Reason.BAD_RESPONSE)
 
+    override suspend fun movieInfo(movieId: Int): MovieDetail =
+        throw XtreamException(XtreamException.Reason.BAD_RESPONSE)
+
     override suspend fun shortEpg(streamId: Int, limit: Int): List<EpgItem> = emptyList()
 
     override fun liveUrl(entry: Entry, format: LiveFormat): String = entry.url.orEmpty()
