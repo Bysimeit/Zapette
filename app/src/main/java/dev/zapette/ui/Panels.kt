@@ -41,10 +41,11 @@ import java.util.Locale
 @Composable
 fun SearchPanel(
     vm: BrowseViewModel,
-    onOpenSeries: (dev.zapette.data.Entry) -> Unit,
+    onOpen: (dev.zapette.data.Entry) -> Unit,
     onPlay: () -> Unit,
     gridFocus: FocusRequester,
 ) {
+    LaunchedEffect(vm.searchKind, vm.api) { vm.preloadSearch() }
     val compact = isCompact()
     val field: @Composable (Modifier) -> Unit = { modifier ->
         OutlinedTextField(
@@ -89,7 +90,7 @@ fun SearchPanel(
                 is Load.Ok -> if (results.value.isEmpty()) {
                     MessageBox(stringResource(R.string.search_no_results))
                 } else {
-                    EntryGrid(vm, vm.searchKind, results.value, onOpenSeries, onPlay, gridFocus)
+                    EntryGrid(vm, vm.searchKind, results.value, onOpen, onPlay, gridFocus)
                 }
             }
         }

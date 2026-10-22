@@ -46,6 +46,14 @@ object ZIcons {
         lineTo(21f, 21f)
     }
 
+    val Back = icon("back") {
+        moveTo(20f, 12f)
+        lineTo(4f, 12f)
+        moveTo(10.5f, 5.5f)
+        lineTo(4f, 12f)
+        lineTo(10.5f, 18.5f)
+    }
+
     val Settings = icon("settings") {
         for ((y, knob) in listOf(6f to 8f, 12f to 16f, 18f to 11f)) {
             moveTo(3f, y)

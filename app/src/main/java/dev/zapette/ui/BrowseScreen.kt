@@ -64,7 +64,7 @@ import java.util.Locale
 @Composable
 fun BrowseScreen(
     vm: BrowseViewModel,
-    onOpenSeries: (Entry) -> Unit,
+    onOpen: (Entry) -> Unit,
     onPlay: () -> Unit,
     onLoggedOut: () -> Unit,
 ) {
@@ -83,16 +83,16 @@ fun BrowseScreen(
         }
     }
 
-    val openSeries: (Entry) -> Unit = {
+    val openDetail: (Entry) -> Unit = {
         vm.focusGridOnReturn = true
-        onOpenSeries(it)
+        onOpen(it)
     }
     val content: @Composable () -> Unit = {
         when (val t = vm.tab) {
-            Tab.SEARCH -> SearchPanel(vm, onOpenSeries = openSeries, onPlay = onPlay, gridFocus = gridFocus)
+            Tab.SEARCH -> SearchPanel(vm, onOpen = openDetail, onPlay = onPlay, gridFocus = gridFocus)
             Tab.SETTINGS -> SettingsPanel(vm, onLoggedOut = onLoggedOut)
             else -> key(t.kind) {
-                KindPanel(vm, t.kind!!, onOpenSeries = openSeries, onPlay = onPlay, gridFocus = gridFocus)
+                KindPanel(vm, t.kind!!, onOpen = openDetail, onPlay = onPlay, gridFocus = gridFocus)
             }
         }
     }
@@ -182,7 +182,7 @@ private fun BottomTabBar(vm: BrowseViewModel) {
 private fun KindPanel(
     vm: BrowseViewModel,
     kind: Kind,
-    onOpenSeries: (Entry) -> Unit,
+    onOpen: (Entry) -> Unit,
     onPlay: () -> Unit,
     gridFocus: FocusRequester,
 ) {
@@ -204,7 +204,7 @@ private fun KindPanel(
                         )
                     )
                 } else {
-                    EntryGrid(vm, kind, items.value, onOpenSeries, onPlay, gridFocus)
+                    EntryGrid(vm, kind, items.value, onOpen, onPlay, gridFocus)
                 }
             }
         }
@@ -314,7 +314,7 @@ fun EntryGrid(
     vm: BrowseViewModel,
     kind: Kind,
     entries: List<Entry>,
-    onOpenSeries: (Entry) -> Unit,
+    onOpen: (Entry) -> Unit,
     onPlay: () -> Unit,
     gridFocus: FocusRequester,
 ) {
@@ -357,19 +357,10 @@ fun EntryGrid(
                     },
                     onLongClick = { toggleFavorite(e) },
                 )
-                Kind.MOVIE -> PosterCard(
+                Kind.MOVIE, Kind.SERIES -> PosterCard(
                     entry = e,
                     favorite = favorite,
-                    onClick = {
-                        vm.playMovie(e)
-                        onPlay()
-                    },
-                    onLongClick = { toggleFavorite(e) },
-                )
-                Kind.SERIES -> PosterCard(
-                    entry = e,
-                    favorite = favorite,
-                    onClick = { onOpenSeries(e) },
+                    onClick = { onOpen(e) },
                     onLongClick = { toggleFavorite(e) },
                 )
             }

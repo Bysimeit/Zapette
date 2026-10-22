@@ -11,6 +11,9 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.viewmodel.compose.SavedStateHandleSaveableApi
+import androidx.lifecycle.viewmodel.compose.saveable
 import androidx.lifecycle.viewModelScope
 import dev.zapette.data.Account
 import dev.zapette.data.AccountInfo
@@ -20,13 +23,16 @@ import dev.zapette.data.Entry
 import dev.zapette.data.Episode
 import dev.zapette.data.Http
 import dev.zapette.data.Kind
+import dev.zapette.data.MovieDetail
 import dev.zapette.data.LiveFormat
 import dev.zapette.data.Prefs
 import dev.zapette.data.SeriesDetail
 import dev.zapette.player.PlayItem
 import dev.zapette.player.PlaybackQueue
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -71,7 +77,8 @@ class KindState {
 const val CAT_FAVORITES = "__fav"
 const val CAT_ALL = "__all"
 
-class BrowseViewModel(app: Application) : AndroidViewModel(app) {
+@OptIn(SavedStateHandleSaveableApi::class)
+class BrowseViewModel(app: Application, private val saved: SavedStateHandle) : AndroidViewModel(app) {
 
     val prefs = Prefs(app)
 
@@ -80,7 +87,7 @@ class BrowseViewModel(app: Application) : AndroidViewModel(app) {
     var api by mutableStateOf(prefs.account?.let { Catalog.create(it, catalogCache) })
         private set
 
-    var tab by mutableStateOf(Tab.LIVE)
+    var tab by saved.saveable { mutableStateOf(Tab.LIVE) }
 
     private val states = Kind.entries.associateWith { KindState() }
     fun state(kind: Kind): KindState = states.getValue(kind)
@@ -102,16 +109,25 @@ class BrowseViewModel(app: Application) : AndroidViewModel(app) {
         private set
     private var seriesJob: Job? = null
 
+    var movieDetail by mutableStateOf<Load<MovieDetail>>(Load.Idle)
+        private set
+    var movieLoadedId by mutableStateOf<Int?>(null)
+        private set
+    private var movieJob: Job? = null
+
     var accountInfo by mutableStateOf<Load<AccountInfo?>>(Load.Idle)
         private set
 
-    var searchQuery by mutableStateOf("")
+    var searchQuery by saved.saveable { mutableStateOf("") }
         private set
-    var searchKind by mutableStateOf(Kind.LIVE)
+    var searchKind by saved.saveable { mutableStateOf(Kind.LIVE) }
         private set
     var searchResults by mutableStateOf<Load<List<Entry>>>(Load.Idle)
         private set
     private var searchJob: Job? = null
+
+    private class SearchIndex(val entries: List<Entry>, val names: Array<String>)
+    private val searchIndexes = HashMap<Kind, Deferred<SearchIndex>>()
 
     var liveFormat by mutableStateOf(prefs.liveFormat)
         private set
@@ -124,10 +140,13 @@ class BrowseViewModel(app: Application) : AndroidViewModel(app) {
     var catalogVersion by mutableIntStateOf(0)
         private set
 
-    var focusGridOnReturn = false
+    var focusGridOnReturn: Boolean
+        get() = saved[KEY_FOCUS_GRID] ?: false
+        set(value) { saved[KEY_FOCUS_GRID] = value }
 
     init {
         Http.userAgent = prefs.userAgent
+        if (searchQuery.isNotBlank()) runSearch()
     }
 
     suspend fun login(account: Account): Result<Unit> {
@@ -173,17 +192,22 @@ class BrowseViewModel(app: Application) : AndroidViewModel(app) {
         catalogVersion++
         streamCache.clear()
         allCache.clear()
+        searchIndexes.values.forEach { it.cancel() }
+        searchIndexes.clear()
         states.values.forEach { it.reset() }
         seriesLoadedId = null
         searchResults = Load.Idle
+        movieLoadedId = null
     }
 
     private fun resetData() {
         clearCache()
         seriesDetail = Load.Idle
+        movieDetail = Load.Idle
         accountInfo = Load.Idle
         searchQuery = ""
         tab = Tab.LIVE
+        Kind.entries.forEach { saved.remove<String>(selectedKey(it)) }
     }
 
     fun onResumed() {
@@ -200,7 +224,10 @@ class BrowseViewModel(app: Application) : AndroidViewModel(app) {
             val result = attempt { api.categories(kind) }
             st.categories = result
             if (result is Load.Ok && st.selected == null) {
-                val first = when {
+                val restored = saved.get<String>(selectedKey(kind))?.takeIf { id ->
+                    id == CAT_FAVORITES || id == CAT_ALL || result.value.any { it.id == id }
+                }
+                val first = restored ?: when {
                     favorites[kind].orEmpty().isNotEmpty() -> CAT_FAVORITES
                     else -> result.value.firstOrNull()?.id ?: CAT_ALL
                 }
@@ -219,6 +246,7 @@ class BrowseViewModel(app: Application) : AndroidViewModel(app) {
         if (!force && st.selected == categoryId && (st.items is Load.Ok || st.items is Load.Loading)) return
         val api = api ?: return
         st.selected = categoryId
+        saved[selectedKey(kind)] = categoryId
         itemJobs[kind]?.cancel()
         st.items = Load.Loading
         itemJobs[kind] = viewModelScope.launch {
@@ -263,6 +291,15 @@ class BrowseViewModel(app: Application) : AndroidViewModel(app) {
         seriesJob = viewModelScope.launch { seriesDetail = attempt { api.seriesInfo(entry.id) } }
     }
 
+    fun loadMovie(entry: Entry, force: Boolean = false) {
+        if (!force && movieLoadedId == entry.id && movieDetail is Load.Ok) return
+        val api = api ?: return
+        movieJob?.cancel()
+        movieLoadedId = entry.id
+        movieDetail = Load.Loading
+        movieJob = viewModelScope.launch { movieDetail = attempt { api.movieInfo(entry.id) } }
+    }
+
     fun onSearchChange(query: String) {
         searchQuery = query
         runSearch()
@@ -273,6 +310,17 @@ class BrowseViewModel(app: Application) : AndroidViewModel(app) {
         runSearch()
     }
 
+    fun preloadSearch() {
+        if (api != null) searchIndex(searchKind)
+    }
+
+    private fun searchIndex(kind: Kind): Deferred<SearchIndex> =
+        searchIndexes[kind]?.takeUnless { it.isCancelled }
+            ?: viewModelScope.async(Dispatchers.Default) {
+                val all = loadAll(kind)
+                SearchIndex(all, Array(all.size) { normalize(all[it].name) })
+            }.also { searchIndexes[kind] = it }
+
     private fun runSearch() {
         searchJob?.cancel()
         val query = normalize(searchQuery.trim())
@@ -282,12 +330,19 @@ class BrowseViewModel(app: Application) : AndroidViewModel(app) {
             return
         }
         searchJob = viewModelScope.launch {
-            delay(350)
+            delay(250)
             searchResults = Load.Loading
             searchResults = attempt {
-                val all = loadAll(kind)
+                val ready = searchIndex(kind).await()
                 withContext(Dispatchers.Default) {
-                    all.filter { normalize(it.name).contains(query) }.take(MAX_SEARCH_RESULTS)
+                    val found = ArrayList<Entry>()
+                    for (i in ready.names.indices) {
+                        if (ready.names[i].contains(query)) {
+                            found += ready.entries[i]
+                            if (found.size == MAX_SEARCH_RESULTS) break
+                        }
+                    }
+                    found
                 }
             }
         }
@@ -356,13 +411,22 @@ class BrowseViewModel(app: Application) : AndroidViewModel(app) {
 
     companion object {
         private const val MAX_SEARCH_RESULTS = 500
-        private val DIACRITICS = Regex("\\p{Mn}+")
 
         fun movieKey(id: Int) = "movie_$id"
         fun episodeKey(id: String) = "ep_$id"
 
-        fun normalize(s: String): String =
-            Normalizer.normalize(s, Normalizer.Form.NFD).replace(DIACRITICS, "").lowercase()
+        private const val KEY_FOCUS_GRID = "focus_grid"
+        private fun selectedKey(kind: Kind) = "selected_${kind.name}"
+
+        fun normalize(s: String): String {
+            if (s.all { it.code < 128 }) return s.lowercase()
+            val decomposed = Normalizer.normalize(s, Normalizer.Form.NFD)
+            val out = StringBuilder(decomposed.length)
+            for (c in decomposed) {
+                if (Character.getType(c) != Character.NON_SPACING_MARK.toInt()) out.append(c)
+            }
+            return out.toString().lowercase()
+        }
     }
 }
 

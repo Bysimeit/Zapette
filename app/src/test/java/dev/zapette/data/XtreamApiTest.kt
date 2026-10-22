@@ -36,4 +36,34 @@ class XtreamApiTest {
     fun `ignores a plain address without credentials`() {
         assertNull(XtreamApi.parseM3uLink("http://example.com:8080"))
     }
+
+    @Test
+    fun `reads movie details`() {
+        val detail = XtreamApi.parseMovieDetail(
+            """{"info":{"movie_image":"http://x/p.jpg","genre":"Drame","plot":"Story","cast":"A, B",
+            "director":"C","releasedate":"08 May 2026","duration_secs":5002,"duration":"01:23:22"}}"""
+        )
+        assertEquals(MovieDetail("Story", "http://x/p.jpg", "Drame", "08 May 2026", 83, "C", "A, B"), detail)
+    }
+
+    @Test
+    fun `reads the runtime from duration_secs first`() {
+        assertEquals(112, XtreamApi.parseMovieDetail("""{"info":{"duration_secs":6720,"duration":"00:10:00"}}""").minutes)
+    }
+
+    @Test
+    fun `falls back to the HH-MM-SS duration`() {
+        assertEquals(112, XtreamApi.parseMovieDetail("""{"info":{"duration":"01:52:30"}}""").minutes)
+    }
+
+    @Test
+    fun `falls back to the runtime in minutes`() {
+        assertEquals(95, XtreamApi.parseMovieDetail("""{"info":{"episode_run_time":"95"}}""").minutes)
+    }
+
+    @Test
+    fun `has no runtime when info is empty`() {
+        assertNull(XtreamApi.parseMovieDetail("""{"info":[],"movie_data":{}}""").minutes)
+        assertNull(XtreamApi.parseMovieDetail("""{"info":{"duration_secs":0,"duration":"00:00:00"}}""").minutes)
+    }
 }

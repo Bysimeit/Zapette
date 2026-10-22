@@ -9,6 +9,7 @@ interface Catalog {
     suspend fun categories(kind: Kind): List<Category>
     suspend fun streams(kind: Kind, categoryId: String?): List<Entry>
     suspend fun seriesInfo(seriesId: Int): SeriesDetail
+    suspend fun movieInfo(movieId: Int): MovieDetail
     suspend fun shortEpg(streamId: Int, limit: Int = 3): List<EpgItem>
 
     fun liveUrl(entry: Entry, format: LiveFormat): String

@@ -47,8 +47,13 @@
     <string name="sign_out">Uitloggen</string>
     <string name="about">Zapette %1$s · vrije IPTV-speler zonder advertenties. De app levert zelf geen inhoud.</string>
     <string name="series_no_episodes">Geen afleveringen beschikbaar voor deze serie.</string>
+    <string name="back">Terug</string>
     <string name="season_n">Seizoen %1$d</string>
     <string name="resume_at">▶ Hervatten op %1$s</string>
+    <string name="play">▶ Afspelen</string>
+    <string name="restart">↺ Opnieuw beginnen</string>
+    <string name="movie_director">Regie: %1$s</string>
+    <string name="movie_cast">Met: %1$s</string>
     <string name="player_epg_loading">Tv-gids laden…</string>
     <string name="player_prev_channel">▼  Vorige zender</string>
     <string name="player_next_channel">Volgende zender  ▲</string>

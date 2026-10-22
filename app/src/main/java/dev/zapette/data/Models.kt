@@ -61,6 +61,16 @@ data class SeriesDetail(
     val seasons: Map<Int, List<Episode>>,
 )
 
+data class MovieDetail(
+    val plot: String?,
+    val cover: String?,
+    val genre: String?,
+    val releaseDate: String?,
+    val minutes: Int?,
+    val director: String?,
+    val cast: String?,
+)
+
 data class AccountInfo(
     val status: String,
     val expiresAt: Long?,

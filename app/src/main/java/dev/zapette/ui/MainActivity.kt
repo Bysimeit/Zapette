@@ -23,15 +23,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.listSaver
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.core.os.bundleOf
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import dev.zapette.data.Entry
+import dev.zapette.data.Kind
 import dev.zapette.player.PlayerActivity
 
 class MainActivity : ComponentActivity() {
@@ -83,13 +86,59 @@ class MainActivity : ComponentActivity() {
 private sealed interface Screen {
     data object Login : Screen
     data object Browse : Screen
-    data class Series(val entry: Entry) : Screen
+    data class Detail(val entry: Entry) : Screen
+}
+
+private val ScreenStackSaver = listSaver<List<Screen>, Bundle>(
+    save = { stack -> stack.map { it.toBundle() } },
+    restore = { saved -> saved.map { it.toScreen() } },
+)
+
+private fun Screen.toBundle(): Bundle = when (this) {
+    Screen.Login -> bundleOf("screen" to "login")
+    Screen.Browse -> bundleOf("screen" to "browse")
+    is Screen.Detail -> bundleOf(
+        "screen" to "detail",
+        "kind" to entry.kind.name,
+        "id" to entry.id,
+        "name" to entry.name,
+        "image" to entry.image,
+        "categoryId" to entry.categoryId,
+        "num" to entry.num,
+        "ext" to entry.ext,
+        "rating" to entry.rating,
+        "plot" to entry.plot,
+        "url" to entry.url,
+        "userAgent" to entry.userAgent,
+    )
+}
+
+private fun Bundle.toScreen(): Screen = when (getString("screen")) {
+    "login" -> Screen.Login
+    "detail" -> Screen.Detail(
+        Entry(
+            kind = Kind.valueOf(getString("kind")!!),
+            id = getInt("id"),
+            name = getString("name").orEmpty(),
+            image = getString("image"),
+            categoryId = getString("categoryId"),
+            num = getInt("num"),
+            ext = getString("ext"),
+            rating = getString("rating"),
+            plot = getString("plot"),
+            url = getString("url"),
+            userAgent = getString("userAgent"),
+        ),
+    )
+    else -> Screen.Browse
 }
 
 @Composable
 private fun ZapetteApp(vm: BrowseViewModel) {
     val context = LocalContext.current
-    var stack by remember { mutableStateOf(listOf(if (vm.api != null) Screen.Browse else Screen.Login)) }
+    var stack by rememberSaveable(stateSaver = ScreenStackSaver) {
+        mutableStateOf(listOf(if (vm.api != null) Screen.Browse else Screen.Login))
+    }
     val saveableState = rememberSaveableStateHolder()
 
     BackHandler(enabled = stack.size > 1) { stack = stack.dropLast(1) }
@@ -107,12 +156,16 @@ private fun ZapetteApp(vm: BrowseViewModel) {
             Screen.Browse -> saveableState.SaveableStateProvider("browse") {
                 BrowseScreen(
                     vm = vm,
-                    onOpenSeries = { stack = stack + Screen.Series(it) },
+                    onOpen = { stack = stack + Screen.Detail(it) },
                     onPlay = play,
                     onLoggedOut = { stack = listOf(Screen.Login) },
                 )
             }
-            is Screen.Series -> SeriesScreen(vm, screen.entry, onPlay = play)
+            is Screen.Detail -> {
+                val back = { stack = stack.dropLast(1) }
+                if (screen.entry.kind == Kind.SERIES) SeriesScreen(vm, screen.entry, onPlay = play, onBack = back)
+                else MovieScreen(vm, screen.entry, onPlay = play, onBack = back)
+            }
         }
     }
 }
